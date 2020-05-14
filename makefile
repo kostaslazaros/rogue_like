@@ -11,3 +11,6 @@ all: rogue
 
 rogue:
 	$(CC) $(SOURCES) $(CFLAGS) -o $@
+
+clean:
+	rm rogue
