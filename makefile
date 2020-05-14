@@ -1,7 +1,8 @@
 CC = gcc
 
-CFLAGS = -lncurses
+CFLAGS = -lncurses -I$(IDIR)
 
+IDIR = ./include/
 SRCDIR = ./src/
 
 SOURCES = $(SRCDIR)*.c
