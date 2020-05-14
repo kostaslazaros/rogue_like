@@ -1,3 +1,7 @@
+#ifndef ROGUELIKE_H
+#define ROGUELIKE_H
+
+
 #include <ncurses.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -8,7 +12,6 @@
 typedef struct Position{
   int x;
   int y;
-  //
 }Position;
 
 
@@ -43,3 +46,5 @@ int move_player(int y, int x, Player * user);
 Room * create_room(int y, int x, int height, int width);
 int room_draw(Room * room);
 int door_connect(Position * door1, Position * door2);
+
+#endif
