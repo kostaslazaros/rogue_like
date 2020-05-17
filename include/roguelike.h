@@ -9,6 +9,16 @@
 #include <time.h>
 
 
+typedef struct Level{
+  char ** tiles;
+  int level_number;
+  int room_number;
+  struct Room ** rooms;
+  struct Monster ** monsters;
+  int monster_number;
+}Level;
+
+
 typedef struct Position{
   int x;
   int y;
@@ -35,11 +45,18 @@ typedef struct Player{
 
 
 int screen_setup();
-Room ** map_setup();
+/* level/map functions */
+Room ** room_setup();
+char ** save_pos_level();
+Level * create_level(int);
+void free_level(Level * level);
+
+
+/* player functions */
 Player * setup_player();
-int handleinput(int input, Player * user);
-int pos_check(int y_new, int x_new, Player * user);
-int move_player(int y, int x, Player * user);
+Position * handleinput(int input, Player * user);
+int pos_check(Position * pos_new, Player * user, char ** level);
+int move_player(Position * pos_new, Player * user, char ** level);
 
 
 // Room functions

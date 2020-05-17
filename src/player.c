@@ -8,27 +8,31 @@ Player * setup_player(){
   new_player->position.y = 19; // get access to player's y position
   new_player->health = 20; // get access to player's health
   new_player->coins = 0;
-  move_player(new_player->position.y, new_player->position.x, new_player);
+  mvprintw(new_player->position.y, new_player->position.x, "@");
+  move(new_player->position.y, new_player->position.x);
   return new_player;
 }
 
 
-int move_player(int y, int x, Player * user){
-  mvprintw(user->position.y, user->position.x, ".");
-  user->position.y = y;
-  user->position.x = x;
+int move_player(Position * pos_new, Player * user, char ** level){
+
+  char buffer[10];
+  sprintf(buffer, "%c", level[user->position.y][user->position.x]);
+  mvprintw(user->position.y, user->position.x, buffer);
+  user->position.y = pos_new->y;
+  user->position.x = pos_new->x;
   mvprintw(user->position.y, user->position.x, "@");
   move(user->position.y, user->position.x);
 }
 
 
-int pos_check(int y_new, int x_new, Player * user){
+int pos_check(Position * pos_new, Player * user, char ** level){
   int space;
-  switch(mvinch(y_new, x_new)){
+  switch(mvinch(pos_new->y, pos_new->x)){
     case '.':
     case '#':
     case '+':
-        move_player(y_new, x_new, user);
+        move_player(pos_new, user, level);
         break;
     default:
         move(user->position.y, user->position.x);
@@ -37,41 +41,41 @@ int pos_check(int y_new, int x_new, Player * user){
 }
 
 
-int handleinput(int input, Player * user){
-  int y_new;
-  int x_new;
+Position * handleinput(int input, Player * user){
+  Position * pos_new;
+  pos_new = malloc(sizeof(Position));
   switch(input){
 
   // move up
     case 'w':
     case 'W':
-        y_new = user->position.y - 1;
-        x_new = user->position.x;
+        pos_new->y = user->position.y - 1;
+        pos_new->x = user->position.x;
         break;
 
   // move down
     case 's':
     case 'S':
-        y_new = user->position.y + 1;
-        x_new = user->position.x;
+        pos_new->y = user->position.y + 1;
+        pos_new->x = user->position.x;
         break;
 
   // move left
     case 'a':
     case 'A':
-        y_new = user->position.y;
-        x_new = user->position.x - 1;
+        pos_new->y = user->position.y;
+        pos_new->x = user->position.x - 1;
         break;
 
   // move right
     case 'd':
     case 'D':
-        y_new = user->position.y;
-        x_new = user->position.x + 1;
+        pos_new->y = user->position.y;
+        pos_new->x = user->position.x + 1;
         break;
 
     default:
         break;
   }
-  pos_check(y_new, x_new, user);
+  return pos_new;
 }

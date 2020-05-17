@@ -70,7 +70,7 @@ int door_connect(Position * door1, Position * door2){
     }
   }
     mvprintw(temp.y, temp.x, "#");
-    getch();
+    //getch();
 }
 
   return 1;
