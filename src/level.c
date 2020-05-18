@@ -8,6 +8,7 @@ Level * create_level(int level_number){
     new_level->room_number = 3;
     new_level->rooms = room_setup();
     new_level->tiles = save_pos_level();
+    add_monsters(new_level);
     return new_level;
 }
 

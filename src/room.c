@@ -1,19 +1,22 @@
 #include "roguelike.h"
 
-
-int room_draw(Room * room){
+int room_draw(Room *room)
+{
   int x;
   int y;
   // draw the floor and the ceiling of the room
-  for(x = room->position.x; x < room->position.x + room->width; x++){
+  for (x = room->position.x; x < room->position.x + room->width; x++)
+  {
     mvprintw(room->position.y, x, "-"); // ceiling of room
     mvprintw(room->position.y + room->height - 1, x, "-");
   }
   // draw the walls
-  for(y = room->position.y + 1; y < room->position.y + room->height - 1; y++){
+  for (y = room->position.y + 1; y < room->position.y + room->height - 1; y++)
+  {
     mvprintw(y, room->position.x, "|");
     mvprintw(y, room->position.x + room->width - 1, "|");
-    for(x = room->position.x + 1; x < room->position.x + room->width - 1; x++){
+    for (x = room->position.x + 1; x < room->position.x + room->width - 1; x++)
+    {
       mvprintw(y, x, ".");
     }
   }
@@ -27,58 +30,70 @@ int room_draw(Room * room){
   return 1;
 }
 
-
 /*The idea of the door connection function is taking a random step in a direction. Is that step going to
 take us closer to the destination door we want? If so, is that step happening in blank space? If so,
 put the # sympol to start creation of a hallway.*/
-int door_connect(Position * door1, Position * door2){
+int door_connect(Position *door1, Position *door2)
+{
   Position temp;
   Position previous;
   int count = 0;
   temp.x = door1->x;
   temp.y = door1->y;
   previous = temp;
-  while(1){
+  while (1)
+  {
 
     /* step left*/
-    if((abs((temp.x - 1) - door2->x) < abs(temp.x - door2->x)) && (mvinch(temp.y, temp.x - 1) == ' ')){
+    if ((abs((temp.x - 1) - door2->x) < abs(temp.x - door2->x)) && (mvinch(temp.y, temp.x - 1) == ' '))
+    {
       previous.x = temp.x;
       temp.x = temp.x - 1;
 
       /* step right*/
-    }else if((abs((temp.x + 1) - door2->x) < abs(temp.x - door2->x)) && (mvinch(temp.y, temp.x + 1) == ' ')){
+    }
+    else if ((abs((temp.x + 1) - door2->x) < abs(temp.x - door2->x)) && (mvinch(temp.y, temp.x + 1) == ' '))
+    {
       previous.x = temp.x;
       temp.x = temp.x + 1;
 
-    /* step down */
-    }else if((abs((temp.y + 1) - door2->y) < abs(temp.y - door2->y)) && (mvinch(temp.y + 1, temp.x) == ' ')){
+      /* step down */
+    }
+    else if ((abs((temp.y + 1) - door2->y) < abs(temp.y - door2->y)) && (mvinch(temp.y + 1, temp.x) == ' '))
+    {
       previous.y = temp.y;
       temp.y = temp.y + 1;
 
-    // step up
-    }else if((abs((temp.y - 1) - door2->y) < abs(temp.y - door2->y)) && (mvinch(temp.y - 1, temp.x) == ' ')){
+      // step up
+    }
+    else if ((abs((temp.y - 1) - door2->y) < abs(temp.y - door2->y)) && (mvinch(temp.y - 1, temp.x) == ' '))
+    {
       previous.y = temp.y;
       temp.y = temp.y - 1;
-    }else{
-      if(count == 0){
+    }
+    else
+    {
+      if (count == 0)
+      {
         temp = previous;
         count++;
         continue;
       }
-      else{
+      else
+      {
         return 0;
+      }
     }
-  }
     mvprintw(temp.y, temp.x, "#");
     //getch();
-}
+  }
 
   return 1;
 }
 
-
-Room * create_room(int y, int x, int height, int width){
-  Room * new_room;
+Room *create_room(int y, int x, int height, int width)
+{
+  Room *new_room;
   new_room = malloc(sizeof(Room));
   new_room->position.x = x;
   new_room->position.y = y;
