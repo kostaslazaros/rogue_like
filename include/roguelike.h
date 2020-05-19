@@ -7,6 +7,15 @@
 #include <stdlib.h>
 #include <time.h>
 
+#define ROWS 25
+#define COLUMNS 100
+#define VISIBILITY 3
+#define HEALTH 20
+#define ATTACK 1
+#define GOLD 0
+#define EXPERIENCE 0
+#define MAX_MONSTERS 6
+
 typedef struct Level {
   char** p_tiles;
   int level_number;
@@ -42,6 +51,10 @@ typedef struct Player {
   // Room * room;
 } Player;
 
+enum LifeState { DEAD = 0, ALIVE = 1 };
+enum PathType { SEEKING = 0, RANDOM_MOVE = 1 };
+enum OrderOfAttack { MONSTER_FIRST = 0, PLAYER_FIRST = 1 };
+
 typedef struct Monster {
   char string[2];
   char symbol;
@@ -49,8 +62,8 @@ typedef struct Monster {
   int attack;
   int speed;
   int defense;
-  int find_path;
-  int alive;
+  enum PathType find_path;
+  enum LifeState alive;
   Position* p_position;
 } Monster;
 
@@ -71,7 +84,7 @@ int pos_check(Position* p_pos_new, Level* p_level);
 int move_player(Position* p_pos_new, Player* user, char** p_level);
 
 /* room functions */
-Room* create_room(int y, int x, int height, int width);
+Room* create_room(int grid);
 int room_draw(Room* p_room);
 int door_connect(Position* p_door1, Position* p_door2);
 

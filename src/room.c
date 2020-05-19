@@ -79,34 +79,61 @@ int door_connect(Position* p_door1, Position* p_door2) {
   return 1;
 }
 
-Room* create_room(int y, int x, int height, int width) {
+Room* create_room(int grid) {
   Room* new_room;
   new_room = malloc(sizeof(Room));
-  new_room->position.x = x;
-  new_room->position.y = y;
-  new_room->height = height;
-  new_room->width = width;
-
+  switch (grid) {
+    case 0:
+      new_room->position.x = 0;
+      new_room->position.y = 0;
+      break;
+    case 1:
+      new_room->position.x = 27;
+      new_room->position.y = 0;
+      break;
+    case 2:
+      new_room->position.x = 54;
+      new_room->position.y = 0;
+      break;
+    case 3:
+      new_room->position.x = 0;
+      new_room->position.y = 14;
+      break;
+    case 4:
+      new_room->position.x = 27;
+      new_room->position.y = 14;
+      break;
+    case 5:
+      new_room->position.x = 54;
+      new_room->position.y = 14;
+      break;
+  }
+  new_room->height = rand() % 6 + 4;
+  new_room->width = rand() % 14 + 4;
   new_room->p_doors = malloc(sizeof(Position) * 4);
 
   // top door
   new_room->p_doors[0] = malloc(sizeof(Position));
-  new_room->p_doors[0]->x = rand() % (width - 2) + new_room->position.x + 1;
+  new_room->p_doors[0]->x =
+      rand() % (new_room->width - 2) + new_room->position.x + 1;
   new_room->p_doors[0]->y = new_room->position.y;
 
   // left door
   new_room->p_doors[1] = malloc(sizeof(Position));
-  new_room->p_doors[1]->y = rand() % (height - 2) + new_room->position.y + 1;
+  new_room->p_doors[1]->y =
+      rand() % (new_room->height - 2) + new_room->position.y + 1;
   new_room->p_doors[1]->x = new_room->position.x;
 
   // bottom door
   new_room->p_doors[2] = malloc(sizeof(Position));
-  new_room->p_doors[2]->x = rand() % (width - 2) + new_room->position.x + 1;
+  new_room->p_doors[2]->x =
+      rand() % (new_room->width - 2) + new_room->position.x + 1;
   new_room->p_doors[2]->y = new_room->position.y + new_room->height - 1;
 
   // right door
   new_room->p_doors[3] = malloc(sizeof(Position));
-  new_room->p_doors[3]->y = rand() % (height - 2) + new_room->position.y + 1;
-  new_room->p_doors[3]->x = new_room->position.x + width - 1;
+  new_room->p_doors[3]->y =
+      rand() % (new_room->height - 2) + new_room->position.y + 1;
+  new_room->p_doors[3]->x = new_room->position.x + new_room->width - 1;
   return new_room;
 }

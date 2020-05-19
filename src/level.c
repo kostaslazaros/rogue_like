@@ -4,7 +4,7 @@ Level* create_level(int level_number) {
   Level* p_new_level;
   p_new_level = malloc(sizeof(Level));
   p_new_level->level_number = level_number;
-  p_new_level->room_number = 3;
+  p_new_level->room_number = 6;
   p_new_level->p_rooms = room_setup();
   p_new_level->p_tiles = save_pos_level();
   p_new_level->p_player = setup_player();
@@ -14,26 +14,27 @@ Level* create_level(int level_number) {
 
 // create the map here
 Room** room_setup() {
+  int x;
   Room** p_rooms;
-  p_rooms = malloc(sizeof(Room) * 6);
-  p_rooms[0] = create_room(13, 1, 6, 8);
-  room_draw(p_rooms[0]);
-  p_rooms[1] = create_room(5, 35, 6, 8);
-  room_draw(p_rooms[1]);
-  p_rooms[2] = create_room(15, 35, 6, 12);
-  room_draw(p_rooms[2]);
-  door_connect(p_rooms[0]->p_doors[3], p_rooms[2]->p_doors[1]);
-  door_connect(p_rooms[1]->p_doors[2], p_rooms[0]->p_doors[0]);
+  // int number_of_rooms = rand() % 4 + 2;
+  int number_of_rooms = 6;
+  p_rooms = malloc(sizeof(Room) * number_of_rooms);
+  for (x = 0; x < number_of_rooms; x++) {
+    p_rooms[x] = create_room(x);
+    room_draw(p_rooms[x]);
+  }
+  // door_connect(p_rooms[0]->p_doors[3], p_rooms[2]->p_doors[1]);
+  // door_connect(p_rooms[1]->p_doors[2], p_rooms[0]->p_doors[0]);
   return p_rooms;
 }
 
 char** save_pos_level() {
   int x, y;
   char** p_positions;
-  p_positions = malloc(sizeof(char*) * 25);
-  for (y = 0; y < 25; y++) {
-    p_positions[y] = malloc(sizeof(char) * 100);
-    for (x = 0; x < 100; x++) {
+  p_positions = malloc(sizeof(char*) * ROWS);
+  for (y = 0; y < ROWS; y++) {
+    p_positions[y] = malloc(sizeof(char) * COLUMNS);
+    for (x = 0; x < COLUMNS; x++) {
       p_positions[y][x] = mvinch(y, x);
     }
   }

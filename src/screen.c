@@ -10,7 +10,7 @@ int screen_setup() {
 }
 
 int game_hub_print(Level* p_level) {
-  mvprintw(0, 0, "    Level: %d", p_level->level_number);
+  mvprintw(24, 0, "    Level: %d", p_level->level_number);
   printw("    Gold: %d", p_level->p_player->gold);
   printw("    Hp: %d(%d)", p_level->p_player->health,
          p_level->p_player->max_health);

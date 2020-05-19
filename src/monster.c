@@ -2,7 +2,7 @@
 
 int add_monsters(Level* p_level) {
   int x;
-  p_level->p_monsters = malloc(sizeof(Monster*) * 6);
+  p_level->p_monsters = malloc(sizeof(Monster*) * MAX_MONSTERS);
   p_level->monster_number = 0;
   for (x = 0; x < p_level->room_number; x++) {
     if ((rand() % 2) == 0) {
@@ -132,6 +132,9 @@ int pathfind_random(Position* p_position) {
 }
 
 int pathfind_seek(Position* p_start, Position* p_destination) {
+  if ((abs(p_start->x - p_destination->x) > VISIBILITY) ||
+      (abs(p_start->y - p_destination->y) > VISIBILITY))
+    return 0;
   /* step left*/
   if ((abs((p_start->x - 1) - p_destination->x) <
        abs(p_start->x - p_destination->x)) &&
@@ -163,7 +166,7 @@ int pathfind_seek(Position* p_start, Position* p_destination) {
 
 Monster* get_monster_at(Position* p_position, Monster** p_monsters) {
   int x;
-  for (x = 0; x < 6; x++) {
+  for (x = 0; x < MAX_MONSTERS; x++) {
     if ((p_position->y == p_monsters[x]->p_position->y) &&
         (p_position->x == p_monsters[x]->p_position->x))
       return p_monsters[x];

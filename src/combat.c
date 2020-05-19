@@ -2,7 +2,7 @@
 
 int combat(Player* p_player, Monster* p_monster, int order) {
   /* Player attacks monster */
-  if (order == 1) {
+  if (order == PLAYER_FIRST) {
     p_monster->health -= p_player->attack;
     if (p_monster->health > 0) {
       p_player->health -= p_monster->attack;
