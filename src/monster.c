@@ -55,9 +55,16 @@ Monster* create_monster(char symbol,
   p_new_monster->speed = speed;
   p_new_monster->defense = defense;
   p_new_monster->find_path = find_path;
+  p_new_monster->alive = 1;
   sprintf(p_new_monster->string, "%c", symbol);
   p_new_monster->p_position = malloc(sizeof(Position));
   return p_new_monster;
+}
+
+int kill_monster(Monster* p_monster) {
+  mvprintw(p_monster->p_position->y, p_monster->p_position->x, ".");
+  p_monster->alive = 0;
+  return 1;
 }
 
 int set_start_pos(Monster* p_monster, Room* p_room) {
@@ -72,6 +79,8 @@ int set_start_pos(Monster* p_monster, Room* p_room) {
 int monster_move(Level* p_level) {
   int x;
   for (x = 0; x < p_level->monster_number; x++) {
+    if (p_level->p_monsters[x]->alive == 0)
+      continue;
     mvprintw(p_level->p_monsters[x]->p_position->y,
              p_level->p_monsters[x]->p_position->x, ".");
     if (p_level->p_monsters[x]->find_path == 1) {
@@ -152,33 +161,12 @@ int pathfind_seek(Position* p_start, Position* p_destination) {
   return 1;
 }
 
-/*
-1 Spiders
-    symbol: X
-    p_level: 1-3
-    health: 2
-    attack: 1
-    speed: 1
-    defense: 1
-    find_path: 1 (random)
-
-
-2 Goblins:
-    symbol: G
-    p_level: 1-5
-    health: 5
-    attack: 3
-    speed: 1
-    defense: 1
-    find_path: 2 (seeking)
-
-
-3 Trolls:
-    symbol: T
-    p_level: 4-6
-    health: 15
-    attack: 5
-    speed: 1
-    defense: 1
-    find_path: 1 (random)
-*/
+Monster* get_monster_at(Position* p_position, Monster** p_monsters) {
+  int x;
+  for (x = 0; x < 6; x++) {
+    if ((p_position->y == p_monsters[x]->p_position->y) &&
+        (p_position->x == p_monsters[x]->p_position->x))
+      return p_monsters[x];
+  }
+  return NULL;
+}

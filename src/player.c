@@ -8,6 +8,7 @@ Player* setup_player() {
   p_new_player->p_position->y = 19;  // get access to p_player's y p_position
   p_new_player->health = 20;         // get access to p_player's health
   p_new_player->coins = 0;
+  p_new_player->attack = 1;
   mvprintw(p_new_player->p_position->y, p_new_player->p_position->x, "@");
   move(p_new_player->p_position->y, p_new_player->p_position->x);
   return p_new_player;
@@ -24,14 +25,20 @@ int move_player(Position* p_pos_new, Player* p_player, char** level) {
   move(p_player->p_position->y, p_player->p_position->x);
 }
 
-int pos_check(Position* p_pos_new, Player* p_player, char** level) {
+int pos_check(Position* p_pos_new, Level* p_level) {
+  Player* p_player;
+  p_player = p_level->p_player;
   int space;
   switch (mvinch(p_pos_new->y, p_pos_new->x)) {
     case '.':
     case '#':
     case '+':
-      move_player(p_pos_new, p_player, level);
+      move_player(p_pos_new, p_player, p_level->p_tiles);
       break;
+    case 'X':
+    case 'G':
+    case 'T':
+      combat(p_player, get_monster_at(p_pos_new, p_level->p_monsters), 1);
     default:
       move(p_player->p_position->y, p_player->p_position->x);
       break;

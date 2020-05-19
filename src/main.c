@@ -18,7 +18,7 @@ int main() {
   /*main game loop*/
   while ((ch = getch()) != 'q') {
     p_pos_new = handleinput(ch, p_level->p_player);
-    pos_check(p_pos_new, p_level->p_player, p_level->p_tiles);
+    pos_check(p_pos_new, p_level);
     monster_move(p_level);
     move(p_level->p_player->p_position->y, p_level->p_player->p_position->x);
   }
