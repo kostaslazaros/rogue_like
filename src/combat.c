@@ -8,6 +8,7 @@ int combat(Player* p_player, Monster* p_monster, int order) {
       p_player->health -= p_monster->attack;
     } else {
       kill_monster(p_monster);
+      p_player->exp++;
     }
   } else {
     p_player->health -= p_monster->attack;

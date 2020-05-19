@@ -1,22 +1,16 @@
 #include "roguelike.h"
 
-int screen_setup() {
-  initscr();
-  // printw("Hello world");
-  noecho();
-  refresh();
-  srand(time(NULL));
-  return 1;
-}
-
 int main() {
   int ch;
   Position* p_pos_new;
   Level* p_level;
   screen_setup();  // seting up the screen
   p_level = create_level(1);
+  // we need this two times because of a special effect
+  game_hub_print(p_level);
   /*main game loop*/
   while ((ch = getch()) != 'q') {
+    game_hub_print(p_level);
     p_pos_new = handleinput(ch, p_level->p_player);
     pos_check(p_pos_new, p_level);
     monster_move(p_level);

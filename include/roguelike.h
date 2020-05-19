@@ -35,8 +35,10 @@ typedef struct Room {
 typedef struct Player {
   Position* p_position;
   int health;
-  int coins;
+  int gold;
   int attack;
+  int max_health;
+  int exp;
   // Room * room;
 } Player;
 
@@ -52,7 +54,10 @@ typedef struct Monster {
   Position* p_position;
 } Monster;
 
+/* screen functions */
 int screen_setup();
+int game_hub_print(Level* p_level);
+
 /* level/map functions */
 Room** room_setup();
 char** save_pos_level();

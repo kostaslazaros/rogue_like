@@ -16,7 +16,7 @@ Level* create_level(int level_number) {
 Room** room_setup() {
   Room** p_rooms;
   p_rooms = malloc(sizeof(Room) * 6);
-  p_rooms[0] = create_room(18, 1, 6, 8);
+  p_rooms[0] = create_room(13, 1, 6, 8);
   room_draw(p_rooms[0]);
   p_rooms[1] = create_room(5, 35, 6, 8);
   room_draw(p_rooms[1]);
