@@ -1,81 +1,77 @@
 #include "roguelike.h"
 
-
-Player * setup_player(){
-  Player * new_player;
-  new_player = malloc(sizeof(Player));
-  new_player->position.x = 2; // get access to player's x position
-  new_player->position.y = 19; // get access to player's y position
-  new_player->health = 20; // get access to player's health
-  new_player->coins = 0;
-  mvprintw(new_player->position.y, new_player->position.x, "@");
-  move(new_player->position.y, new_player->position.x);
-  return new_player;
+Player* setup_player() {
+  Player* p_new_player;
+  p_new_player = malloc(sizeof(Player));
+  p_new_player->p_position = malloc(sizeof(Position));
+  p_new_player->p_position->x = 2;   // get access to p_player's x p_position
+  p_new_player->p_position->y = 19;  // get access to p_player's y p_position
+  p_new_player->health = 20;         // get access to p_player's health
+  p_new_player->coins = 0;
+  mvprintw(p_new_player->p_position->y, p_new_player->p_position->x, "@");
+  move(p_new_player->p_position->y, p_new_player->p_position->x);
+  return p_new_player;
 }
 
-
-int move_player(Position * pos_new, Player * user, char ** level){
-
+int move_player(Position* p_pos_new, Player* p_player, char** level) {
   char buffer[10];
-  sprintf(buffer, "%c", level[user->position.y][user->position.x]);
-  mvprintw(user->position.y, user->position.x, buffer);
-  user->position.y = pos_new->y;
-  user->position.x = pos_new->x;
-  mvprintw(user->position.y, user->position.x, "@");
-  move(user->position.y, user->position.x);
+  sprintf(buffer, "%c",
+          level[p_player->p_position->y][p_player->p_position->x]);
+  mvprintw(p_player->p_position->y, p_player->p_position->x, buffer);
+  p_player->p_position->y = p_pos_new->y;
+  p_player->p_position->x = p_pos_new->x;
+  mvprintw(p_player->p_position->y, p_player->p_position->x, "@");
+  move(p_player->p_position->y, p_player->p_position->x);
 }
 
-
-int pos_check(Position * pos_new, Player * user, char ** level){
+int pos_check(Position* p_pos_new, Player* p_player, char** level) {
   int space;
-  switch(mvinch(pos_new->y, pos_new->x)){
+  switch (mvinch(p_pos_new->y, p_pos_new->x)) {
     case '.':
     case '#':
     case '+':
-        move_player(pos_new, user, level);
-        break;
+      move_player(p_pos_new, p_player, level);
+      break;
     default:
-        move(user->position.y, user->position.x);
-        break;
+      move(p_player->p_position->y, p_player->p_position->x);
+      break;
   }
 }
 
-
-Position * handleinput(int input, Player * user){
-  Position * pos_new;
-  pos_new = malloc(sizeof(Position));
-  switch(input){
-
-  // move up
+Position* handleinput(int input, Player* p_player) {
+  Position* p_pos_new;
+  p_pos_new = malloc(sizeof(Position));
+  switch (input) {
+      // move up
     case 'w':
     case 'W':
-        pos_new->y = user->position.y - 1;
-        pos_new->x = user->position.x;
-        break;
+      p_pos_new->y = p_player->p_position->y - 1;
+      p_pos_new->x = p_player->p_position->x;
+      break;
 
-  // move down
+      // move down
     case 's':
     case 'S':
-        pos_new->y = user->position.y + 1;
-        pos_new->x = user->position.x;
-        break;
+      p_pos_new->y = p_player->p_position->y + 1;
+      p_pos_new->x = p_player->p_position->x;
+      break;
 
-  // move left
+      // move left
     case 'a':
     case 'A':
-        pos_new->y = user->position.y;
-        pos_new->x = user->position.x - 1;
-        break;
+      p_pos_new->y = p_player->p_position->y;
+      p_pos_new->x = p_player->p_position->x - 1;
+      break;
 
-  // move right
+      // move right
     case 'd':
     case 'D':
-        pos_new->y = user->position.y;
-        pos_new->x = user->position.x + 1;
-        break;
+      p_pos_new->y = p_player->p_position->y;
+      p_pos_new->x = p_player->p_position->x + 1;
+      break;
 
     default:
-        break;
+      break;
   }
-  return pos_new;
+  return p_pos_new;
 }
