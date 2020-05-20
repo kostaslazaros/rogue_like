@@ -110,6 +110,12 @@ Room* create_room(int grid) {
   }
   new_room->height = rand() % 6 + 4;
   new_room->width = rand() % 14 + 4;
+
+  /* offset; room can be printed within the entirety of a grid */
+
+  new_room->position.x += rand() % (29 - new_room->width + 1);
+  new_room->position.y += rand() % (9 - new_room->height + 1);
+
   new_room->p_doors = malloc(sizeof(Position) * 4);
 
   // top door

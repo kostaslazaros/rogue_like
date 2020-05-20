@@ -4,16 +4,19 @@ Player* setup_player() {
   Player* p_new_player;
   p_new_player = malloc(sizeof(Player));
   p_new_player->p_position = malloc(sizeof(Position));
-  p_new_player->p_position->x = 1;  // get access to p_player's x p_position
-  p_new_player->p_position->y = 1;  // get access to p_player's y p_position
-  p_new_player->health = HEALTH;    // get access to p_player's health
+  p_new_player->health = HEALTH;  // get access to p_player's health
   p_new_player->gold = GOLD;
   p_new_player->attack = ATTACK;
   p_new_player->exp = EXPERIENCE;
   p_new_player->max_health = HEALTH;
-  mvprintw(p_new_player->p_position->y, p_new_player->p_position->x, "@");
-  move(p_new_player->p_position->y, p_new_player->p_position->x);
   return p_new_player;
+}
+
+int place_player_in_room(Room** p_rooms, Player* p_player) {
+  p_player->p_position->x = p_rooms[3]->position.x + 1;
+  p_player->p_position->y = p_rooms[3]->position.y + 1;
+  mvprintw(p_player->p_position->y, p_player->p_position->x, "@");
+  move(p_player->p_position->y, p_player->p_position->x);
 }
 
 int move_player(Position* p_pos_new, Player* p_player, char** level) {

@@ -15,6 +15,7 @@
 #define GOLD 0
 #define EXPERIENCE 0
 #define MAX_MONSTERS 6
+#define MAX_NUMBER_OF_ROOMS 6
 
 typedef struct Level {
   char** p_tiles;
@@ -82,6 +83,7 @@ Player* setup_player();
 Position* handleinput(int input, Player* user);
 int pos_check(Position* p_pos_new, Level* p_level);
 int move_player(Position* p_pos_new, Player* user, char** p_level);
+int place_player_in_room(Room** p_rooms, Player* p_player);
 
 /* room functions */
 Room* create_room(int grid);

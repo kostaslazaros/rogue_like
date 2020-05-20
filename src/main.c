@@ -17,8 +17,8 @@ int main() {
     move(p_level->p_player->p_position->y, p_level->p_player->p_position->x);
   }
   endwin();  // close it all down
-  free(p_level->p_player);
-  free_level(p_level);
-  free(p_pos_new);
+  // free(p_level->p_player);
+  // free_level(p_level);
+  // free(p_pos_new);
   return 0;
 }
