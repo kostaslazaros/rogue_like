@@ -1,4 +1,5 @@
 #include "roguelike.h"
+#include "utils.h"
 
 Level* create_level(int level_number) {
   Level* p_new_level;
@@ -24,8 +25,9 @@ Room** room_setup() {
     p_rooms[x] = create_room(x);
     room_draw(p_rooms[x]);
   }
-  door_connect(p_rooms[0]->p_doors[3], p_rooms[1]->p_doors[1]);
-  door_connect(p_rooms[1]->p_doors[2], p_rooms[0]->p_doors[0]);
+  // door_connect(p_rooms[0]->p_doors[3], p_rooms[1]->p_doors[1]);
+  find_path(p_rooms[0]->p_doors[3], p_rooms[1]->p_doors[1]);
+  // door_connect(p_rooms[1]->p_doors[2], p_rooms[0]->p_doors[0]);
   return p_rooms;
 }
 

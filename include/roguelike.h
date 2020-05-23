@@ -17,6 +17,8 @@
 #define MAX_MONSTERS 6
 #define MAX_NUMBER_OF_ROOMS 6
 
+/* structure definitions */
+
 typedef struct Level {
   char** p_tiles;
   int level_number;

@@ -1,4 +1,5 @@
 #include "roguelike.h"
+#include "utils.h"
 
 int main() {
   int ch;
