@@ -38,10 +38,16 @@ typedef struct Room {
   Position position;
   int height;
   int width;
-  Position** p_doors;
+  struct Door** p_doors;
+  int number_of_doors;
   // Monster ** p_monsters;
   // Item ** items;
 } Room;
+
+typedef struct Door {
+  Position position;
+  int connected;
+} Door;
 
 // player structure with player's attributes
 typedef struct Player {
@@ -79,6 +85,7 @@ Room** room_setup();
 char** save_pos_level();
 Level* create_level(int);
 void free_level(Level* p_level);
+void connect_doors(Level* p_level);
 
 /* player functions */
 Player* setup_player();
@@ -88,9 +95,8 @@ int move_player(Position* p_pos_new, Player* user, char** p_level);
 int place_player_in_room(Room** p_rooms, Player* p_player);
 
 /* room functions */
-Room* create_room(int grid);
+Room* create_room(int grid, int number_of_doors);
 int room_draw(Room* p_room);
-int door_connect(Position* p_door1, Position* p_door2);
 
 /* monster functions */
 int add_monsters(Level* level);

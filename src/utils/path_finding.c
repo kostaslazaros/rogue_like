@@ -6,34 +6,44 @@ void add_position_xy(int** frontier, int front_counter, int y, int x) {
   frontier[front_counter][1] = x;
 }
 
+int check_point(int y, int x) {
+  char temp = mvinch(
+      y, x);  // give the character at point (y,x) and store it in char temp
+  if (temp == '.' || temp == '|' || temp == '-')
+    return 0;
+  else
+    return 1;
+}
+
 int add_neighbors(int** frontier,
                   int front_counter,
                   int*** came_from,
                   int y,
                   int x) {
   // north position
-  if (y > 0 && came_from[y - 1][x][0] < 0) {
+  if (y > 0 && came_from[y - 1][x][0] < 0 && check_point(y - 1, x)) {
     add_position_xy(frontier, front_counter, y - 1, x);
     front_counter++;
     came_from[y - 1][x][0] = y;
     came_from[y - 1][x][1] = x;
   }
   // south position
-  if (y < (ROWS - 1) && came_from[y + 1][x][0] < 0) {
+  if (y < (ROWS - 1) && came_from[y + 1][x][0] < 0 && check_point(y + 1, x)) {
     add_position_xy(frontier, front_counter, y + 1, x);
     front_counter++;
     came_from[y + 1][x][0] = y;
     came_from[y + 1][x][1] = x;
   }
   // east position
-  if (x < (COLUMNS - 1) && came_from[y][x + 1][0] < 0) {
+  if (x < (COLUMNS - 1) && came_from[y][x + 1][0] < 0 &&
+      check_point(y, x + 1)) {
     add_position_xy(frontier, front_counter, y, x + 1);
     front_counter++;
     came_from[y][x + 1][0] = y;
     came_from[y][x + 1][1] = x;
   }
   // west position
-  if (x > 0 && came_from[y][x - 1][0] < 0) {
+  if (x > 0 && came_from[y][x - 1][0] < 0 && check_point(y, x - 1)) {
     add_position_xy(frontier, front_counter, y, x - 1);
     front_counter++;
     came_from[y][x - 1][0] = y;
@@ -45,6 +55,7 @@ int add_neighbors(int** frontier,
 void find_path(Position* start, Position* end) {
   int i, j;
   int x, y;
+  int temp_y;
   int front_index = 0;
   int front_counter = 0;
   int** frontier = malloc(sizeof(int*) * ROWS * COLUMNS);
@@ -85,9 +96,10 @@ void find_path(Position* start, Position* end) {
   x == end->x;
 
   while (y != start->y || x != start->x) {
+    temp_y = y;
     y = came_from[y][x][0];
-    x = came_from[y][x][1];
+    x = came_from[temp_y][x][1];
     mvprintw(y, x, "+");
-    getch();
+    // getch();
   }
 }
