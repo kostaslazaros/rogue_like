@@ -79,3 +79,19 @@ void free_level(Level* p_level) {
   free(p_level->p_rooms);
   free(p_level);
 }
+
+void level_draw(Level* p_level) {
+  int x, y, i;
+
+  // print level tiles
+  for (y = 0; y < ROWS; y++) {
+    for (x = 0; x < COLUMNS; x++) {
+      mvaddch(y, x, p_level->p_tiles[y][x]);
+    }
+  }
+  // print monsters
+  for (i = 0; i < p_level->monster_number; i++) {
+    moster_draw(p_level->p_monsters[i]);
+  }
+  player_print(p_level->p_player);
+}

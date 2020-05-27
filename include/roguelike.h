@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define ROWS 25
+#define ROWS 24
 #define COLUMNS 100
 #define VISIBILITY 3
 #define HEALTH 20
@@ -18,6 +18,11 @@
 #define MAX_NUMBER_OF_ROOMS 6
 
 /* structure definitions */
+
+typedef struct Game {
+  struct Level* p_levels[10];
+  int current_level;
+} Game;
 
 typedef struct Level {
   char** p_tiles;
@@ -86,6 +91,7 @@ char** save_pos_level();
 Level* create_level(int);
 void free_level(Level* p_level);
 void connect_doors(Level* p_level);
+void level_draw(Level* p_level);
 
 /* player functions */
 Player* setup_player();
@@ -93,6 +99,7 @@ Position* handleinput(int input, Player* user);
 int pos_check(Position* p_pos_new, Level* p_level);
 int move_player(Position* p_pos_new, Player* user, char** p_level);
 int place_player_in_room(Room** p_rooms, Player* p_player);
+void player_print(Player* p_player);
 
 /* room functions */
 Room* create_room(int grid, int number_of_doors);
@@ -112,8 +119,13 @@ int monster_move(Level* p_level);
 int pathfind_seek(Position* p_start, Position* p_destination);
 int pathfind_random(Position* position);
 Monster* get_monster_at(Position* p_position, Monster** p_monsters);
+void moster_draw(Monster* p_monster);
+
 /* combat functions */
 int combat(Player* p_player, Monster* p_monster, int order);
 int kill_monster(Monster* p_monster);
 
+/*game functions*/
+int game_loop(Game* game);
+void render(Game* game);
 #endif

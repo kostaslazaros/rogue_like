@@ -62,7 +62,6 @@ Monster* create_monster(char symbol,
 }
 
 int kill_monster(Monster* p_monster) {
-  mvprintw(p_monster->p_position->y, p_monster->p_position->x, ".");
   p_monster->alive = 0;
   return 1;
 }
@@ -72,8 +71,6 @@ int set_start_pos(Monster* p_monster, Room* p_room) {
       (rand() % (p_room->width - 2)) + p_room->position.x + 1;
   p_monster->p_position->y =
       (rand() % (p_room->height - 2)) + p_room->position.y + 1;
-  mvprintw(p_monster->p_position->y, p_monster->p_position->x,
-           p_monster->string);
 }
 
 int monster_move(Level* p_level) {
@@ -81,17 +78,13 @@ int monster_move(Level* p_level) {
   for (x = 0; x < p_level->monster_number; x++) {
     if (p_level->p_monsters[x]->alive == 0)
       continue;
-    mvprintw(p_level->p_monsters[x]->p_position->y,
-             p_level->p_monsters[x]->p_position->x, ".");
+
     if (p_level->p_monsters[x]->find_path == 1) {
       pathfind_random(p_level->p_monsters[x]->p_position);
     } else {
       pathfind_seek(p_level->p_monsters[x]->p_position,
                     p_level->p_player->p_position);
     }
-    mvprintw(p_level->p_monsters[x]->p_position->y,
-             p_level->p_monsters[x]->p_position->x,
-             p_level->p_monsters[x]->string);
   }
 }
 
@@ -172,4 +165,11 @@ Monster* get_monster_at(Position* p_position, Monster** p_monsters) {
       return p_monsters[x];
   }
   return NULL;
+}
+
+void moster_draw(Monster* p_monster) {
+  if (p_monster->alive) {
+    mvprintw(p_monster->p_position->y, p_monster->p_position->x,
+             p_monster->string);
+  }
 }

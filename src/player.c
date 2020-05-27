@@ -15,19 +15,11 @@ Player* setup_player() {
 int place_player_in_room(Room** p_rooms, Player* p_player) {
   p_player->p_position->x = p_rooms[3]->position.x + 1;
   p_player->p_position->y = p_rooms[3]->position.y + 1;
-  mvprintw(p_player->p_position->y, p_player->p_position->x, "@");
-  move(p_player->p_position->y, p_player->p_position->x);
 }
 
 int move_player(Position* p_pos_new, Player* p_player, char** level) {
-  char buffer[10];
-  sprintf(buffer, "%c",
-          level[p_player->p_position->y][p_player->p_position->x]);
-  mvprintw(p_player->p_position->y, p_player->p_position->x, buffer);
   p_player->p_position->y = p_pos_new->y;
   p_player->p_position->x = p_pos_new->x;
-  mvprintw(p_player->p_position->y, p_player->p_position->x, "@");
-  move(p_player->p_position->y, p_player->p_position->x);
 }
 
 int pos_check(Position* p_pos_new, Level* p_level) {
@@ -86,4 +78,9 @@ Position* handleinput(int input, Player* p_player) {
       break;
   }
   return p_pos_new;
+}
+
+void player_print(Player* p_player) {
+  mvprintw(p_player->p_position->y, p_player->p_position->x, "@");
+  move(p_player->p_position->y, p_player->p_position->x);
 }
