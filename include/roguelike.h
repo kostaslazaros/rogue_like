@@ -3,10 +3,18 @@
 
 #include <ctype.h>
 #include <ncurses.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
 #include <time.h>
+#include <unistd.h>
 
+#define PORT 9000
 #define ROWS 24
 #define COLUMNS 100
 #define VISIBILITY 3
@@ -16,6 +24,10 @@
 #define EXPERIENCE 0
 #define MAX_MONSTERS 6
 #define MAX_NUMBER_OF_ROOMS 6
+#define UP_KEY 'W'
+#define LOW_KEY 'S'
+#define RIGHT_KEY 'D'
+#define LEFT_KEY 'A'
 
 /* structure definitions */
 
@@ -28,10 +40,12 @@ typedef struct Level {
   char** p_tiles;
   int level_number;
   int room_number;
+  int monster_number;
+  int potion_number;
   struct Room** p_rooms;
   struct Monster** p_monsters;
+  struct Potion** p_potions;
   struct Player* p_player;
-  int monster_number;
 } Level;
 
 typedef struct Position {
@@ -81,6 +95,14 @@ typedef struct Monster {
   Position* p_position;
 } Monster;
 
+typedef struct Potion {
+  Position* p_position;
+  int exist_value;
+  int health_value;
+  char string[2];
+  char symbol;
+} Potion;
+
 /* screen functions */
 int screen_setup();
 int game_hub_print(Level* p_level);
@@ -125,7 +147,16 @@ void moster_draw(Monster* p_monster);
 int combat(Player* p_player, Monster* p_monster, int order);
 int kill_monster(Monster* p_monster);
 
-/*game functions*/
+/* game functions */
 int game_loop(Game* game);
 void render(Game* game);
+
+/* potion functions */
+Potion* create_potion(char symbol, int health_value, int exist_value);
+int set_potion_pos(Potion* p_potion, Room* p_room);
+int add_potions(Level* p_level);
+int potion_disappear(Potion* p_potion);
+Potion* get_potion_at(Position* p_position, Potion** p_potions);
+void potion_draw(Potion* p_potion);
+int drink_potion(Player* p_player, Potion* p_potion, int order);
 #endif

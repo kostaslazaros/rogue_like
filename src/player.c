@@ -36,6 +36,9 @@ int pos_check(Position* p_pos_new, Level* p_level) {
     case 'G':
     case 'T':
       combat(p_player, get_monster_at(p_pos_new, p_level->p_monsters), 1);
+      break;
+    case 'H':
+      drink_potion(p_player, get_potion_at(p_pos_new, p_level->p_potions), 1);
     default:
       move(p_player->p_position->y, p_player->p_position->x);
       break;
@@ -43,33 +46,31 @@ int pos_check(Position* p_pos_new, Level* p_level) {
 }
 
 Position* handleinput(int input, Player* p_player) {
+  int key_buffer;
+  key_buffer = toupper(input);
   Position* p_pos_new;
   p_pos_new = malloc(sizeof(Position));
-  switch (input) {
+  switch (key_buffer) {
       // move up
-    case 'w':
-    case 'W':
+    case UP_KEY:
       p_pos_new->y = p_player->p_position->y - 1;
       p_pos_new->x = p_player->p_position->x;
       break;
 
       // move down
-    case 's':
-    case 'S':
+    case LOW_KEY:
       p_pos_new->y = p_player->p_position->y + 1;
       p_pos_new->x = p_player->p_position->x;
       break;
 
       // move left
-    case 'a':
-    case 'A':
+    case LEFT_KEY:
       p_pos_new->y = p_player->p_position->y;
       p_pos_new->x = p_player->p_position->x - 1;
       break;
 
       // move right
-    case 'd':
-    case 'D':
+    case RIGHT_KEY:
       p_pos_new->y = p_player->p_position->y;
       p_pos_new->x = p_player->p_position->x + 1;
       break;

@@ -12,6 +12,7 @@ Level* create_level(int level_number) {
   p_new_level->p_player = setup_player();
   place_player_in_room(p_new_level->p_rooms, p_new_level->p_player);
   add_monsters(p_new_level);
+  add_potions(p_new_level);
   return p_new_level;
 }
 
@@ -81,7 +82,7 @@ void free_level(Level* p_level) {
 }
 
 void level_draw(Level* p_level) {
-  int x, y, i;
+  int x, y, i, j;
 
   // print level tiles
   for (y = 0; y < ROWS; y++) {
@@ -93,5 +94,9 @@ void level_draw(Level* p_level) {
   for (i = 0; i < p_level->monster_number; i++) {
     moster_draw(p_level->p_monsters[i]);
   }
+  for (j = 0; j < p_level->potion_number; j++) {
+    potion_draw(p_level->p_potions[j]);
+  }
+
   player_print(p_level->p_player);
 }

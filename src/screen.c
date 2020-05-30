@@ -2,7 +2,6 @@
 
 int screen_setup() {
   initscr();
-  // printw("Hello world");
   noecho();
   keypad(stdscr, TRUE);  // allow access to system keys
   refresh();
