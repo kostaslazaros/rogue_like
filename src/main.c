@@ -4,11 +4,11 @@
 
 void menu_loop() {
   int choice;
-  char* choices[] = {"Singleplayer", "Exit game"};
+  char* choices[] = {"Singleplayer", "Multiplayer", "Exit game"};
   Game game;
   game.current_level = 0;
   while (true) {
-    choice = main_menu(2, choices);
+    choice = main_menu(3, choices);
     switch (choice) {
       case SINGLEPLAYER:
         game_loop(&game);
