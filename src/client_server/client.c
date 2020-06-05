@@ -206,31 +206,31 @@ int main(int argc, char* argv[]) {
   init_pair(6, COLOR_BLACK, COLOR_WHITE);
   init_pair(8, COLOR_BLACK, COLOR_MAGENTA);
 
-  mvprintw((HEIGHT - 20) / 2, (WIDTH - 58) / 2, "                          _");
+  mvprintw((HEIGHT - 20) / 2, (WIDTH - 58) / 2,
+           "  _____ _   _______ _____ _____ _____ ");
   mvprintw((HEIGHT - 20) / 2 + 1, (WIDTH - 58) / 2,
-           " __                      | |");
+           " /  ___| | / /  _  |_   _|  _  /  ___|");
   mvprintw((HEIGHT - 20) / 2 + 2, (WIDTH - 58) / 2,
-           "{OO}      ___ _ __   __ _| | _____  ___");
+           " \\ `--.| |/ /| | | | | | | | | \\ `--. ");
   mvprintw((HEIGHT - 20) / 2 + 3, (WIDTH - 58) / 2,
-           "\\__/     / __| '_ \\ / _` | |/ / _ \\/ __|");
+           "  `--. \\    \\| | | | | | | | | |`--. \"");
   mvprintw((HEIGHT - 20) / 2 + 4, (WIDTH - 58) / 2,
-           " |^|     \\__ \\ | | | (_| |   <  __/\\__ \\");
+           " /\\__/ / |\\  \\ \\_/ / | | \\ \\_/ /\\__/ /");
   mvprintw((HEIGHT - 20) / 2 + 5, (WIDTH - 58) / 2,
-           " | |     |___/_| |_|\\__,_|_|\\_\\___||___/   v1.0  /\\");
+           " \\____/\\_| \\_/\\___/  \\_/  \\___/\\____/ v1.0  /\\");
   mvprintw((HEIGHT - 20) / 2 + 6, (WIDTH - 58) / 2,
-           " | |____________________________________________/ /");
+           "___________________________________________/ /");
   mvprintw((HEIGHT - 20) / 2 + 7, (WIDTH - 58) / 2,
-           " \\_______________________________________________/");
+           "\\___________________________________________/");
   mvprintw((HEIGHT - 20) / 2 + 10, (WIDTH - 58) / 2, " Instructions:");
   mvprintw((HEIGHT - 20) / 2 + 12, (WIDTH - 58) / 2,
-           " - Use the keys w, a, s, d to move your snake.");
+           " - Use the keys w, a, s, d to move.");
   mvprintw((HEIGHT - 20) / 2 + 13, (WIDTH - 58) / 2,
-           " - Eat fruit to grow in length.");
-  mvprintw((HEIGHT - 20) / 2 + 14, (WIDTH - 58) / 2,
-           " - Do not run in to other snakes, the game border");
-  mvprintw((HEIGHT - 20) / 2 + 15, (WIDTH - 58) / 2, "   or yourself.");
+           " - Eat fruit, slay monsters.");
+  mvprintw((HEIGHT - 20) / 2 + 14, (WIDTH - 58) / 2, " - Play with friends");
+  mvprintw((HEIGHT - 20) / 2 + 15, (WIDTH - 58) / 2, "   or alone.");
   mvprintw((HEIGHT - 20) / 2 + 16, (WIDTH - 58) / 2,
-           " - The first snake to reach length 15 wins!");
+           " - Defeat the big boss at level 10 to win!");
   mvprintw((HEIGHT - 20) / 2 + 17, (WIDTH - 58) / 2,
            " - Press '.' to quit at any time.");
   mvprintw((HEIGHT - 20) / 2 + 19, (WIDTH - 58) / 2,
@@ -248,7 +248,7 @@ int main(int argc, char* argv[]) {
     timeout(REFRESH * 1000);
     key_buffer = getch();
     key_buffer = toupper(key_buffer);
-    if (key_buffer == 'q') {
+    if (key_buffer == '.') {
       game_result = INTERRUPTED;
       break;
     } else if ((key_buffer == UP_KEY) || (key_buffer == DOWN_KEY) ||
