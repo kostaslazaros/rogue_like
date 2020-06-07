@@ -498,7 +498,8 @@ int main() {
 
       else {
         printf("Not Found\n");
-        close(socket_fds[i]);
+        send(socket_fds[i], "2", strlen("1"), 0);
+        // close(socket_fds[i]);
       }
     } else if (strncmp(usr.action, "2", 1) == 0) {
       add_new_user(usr.name, usr.passwd, &active_users);
