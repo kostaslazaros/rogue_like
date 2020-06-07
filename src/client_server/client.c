@@ -3,41 +3,41 @@
  * Luke Collins
  */
 
-#include <ctype.h>
 #include <ncurses.h>
 #include <netdb.h>
-#include <netinet/in.h>
-#include <pthread.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <sys/types.h>
 #include <time.h>
-#include <unistd.h>
 
-#define PORT 7070
-#define HEIGHT 24
-#define WIDTH 80
-#define FRUIT -1024
-#define SPIDER 111
-#define GOBLIN 200
-#define BORDER -99
-#define NEXT_LEVEL 24
-#define PREVIOUS_LEVEL 23
+#include "skotos.h"
+
+#define LOCALHOST "127.0.0.1"
+
 #define REFRESH 0.125
-#define WINNER -94
 #define ONGOING -34
 #define INTERRUPTED -30
-#define UP_KEY 'W'
-#define DOWN_KEY 'S'
-#define LEFT_KEY 'A'
-#define RIGHT_KEY 'D'
-#define STAT_KEY 'Q'
+
 #define PLAYER_CHAR '@'
 #define SPIDER_CHAR 'X'
 #define GOBLIN_CHAR 'G'
 #define TROLL_CHAR 'T'
+
+typedef struct {
+  char name[25];
+  char passwd[25];
+  char action_choice[2];
+} user_data;
+
+user_data user_data_input() {
+  user_data new_user;
+  //   system("clear");
+  initscr();
+  echo();
+  mvprintw((HEIGHT - 20) / 2 + 10, (WIDTH - 58) / 2, "Enter the user name :");
+  wgetnstr(stdscr, new_user.name, sizeof(new_user.name));
+  mvprintw((HEIGHT - 20) / 2 + 12, (WIDTH - 58) / 2, "Enter the password :");
+  wgetnstr(stdscr, new_user.passwd, sizeof(new_user.passwd));
+  noecho();
+  return new_user;
+}
 
 WINDOW* win;
 char key = STAT_KEY;
@@ -88,7 +88,7 @@ void* update_screen(void* arg) {
   int i, j, n;
 
   while (game_result == ONGOING) {
-    // Recieve updated map from server
+    // Receive updated map from server
     bytes_read = 0;
     bzero(map_buffer, map_size);
     while (bytes_read < map_size) {
@@ -104,37 +104,42 @@ void* update_screen(void* arg) {
     refresh();
     wrefresh(win);
 
-    // for each position in the array, check if it's a snake head or bodypart
+    // paint map
     for (i = 0; i < HEIGHT; i++) {
       for (j = 0; j < WIDTH; j++) {
         int current = game_map[i][j];
-        int colour = abs(current) % 7;
-        attron(COLOR_PAIR(colour));
+        int player_colour = abs(current) % 7;
+
         if ((current > GOBLIN) && (current < GOBLIN + 100)) {
-          attron(COLOR_PAIR(8));
+          attron(COLOR_PAIR(9));
           mvprintw(i, j, "G");
-          attroff(COLOR_PAIR(8));
+          attroff(COLOR_PAIR(9));
         } else if (current == NEXT_LEVEL) {
+          attron(COLOR_PAIR(7));
           mvprintw(i, j, ">");
+          attroff(COLOR_PAIR(7));
         } else if (current == PREVIOUS_LEVEL) {
+          attron(COLOR_PAIR(7));
           mvprintw(i, j, "<");
+          attroff(COLOR_PAIR(7));
         } else if ((current > 0) && (current != FRUIT)) {
           mvprintw(i, j, " ");
-          attroff(COLOR_PAIR(colour));
         } else if ((current < 0) && (current > -7)) {
+          attron(COLOR_PAIR(player_colour));
           mvprintw(i, j, "@");
-          attroff(COLOR_PAIR(colour));
+          attroff(COLOR_PAIR(player_colour));
         }
 
         else if (current == BORDER) {
-          attron(COLOR_PAIR(6));
+          attron(COLOR_PAIR(8));
           mvprintw(i, j, " ");
-          attroff(COLOR_PAIR(6));
+          attroff(COLOR_PAIR(8));
         }
 
         else if (current == FRUIT) {
-          attroff(COLOR_PAIR(colour));
-          mvprintw(i, j, "o");
+          attron(COLOR_PAIR(10));
+          mvprintw(i, j, "O");
+          attroff(COLOR_PAIR(10));
         }
       }
     }
@@ -147,65 +152,8 @@ end:
   return 0;
 }
 
-int main(int argc, char* argv[]) {
-  int sockfd;
-  struct sockaddr_in serv_addr;
-  struct hostent* server;
-  char key_buffer;
-
-  if (argc < 2) {
-    fprintf(stderr, "Please type:\n\t %s [server ip]\n to launch the game.\n",
-            argv[0]);
-    exit(0);
-  }
-
-  // Getting socket descriptor
-  sockfd = socket(AF_INET, SOCK_STREAM, 0);
-  if (sockfd < 0)
-    error("ERROR opening socket");
-
-  // Resolving host name
-  server = gethostbyname(argv[1]);
-  if (server == NULL) {
-    fprintf(stderr, "ERROR, no such host.\n");
-    exit(0);
-  }
-
-  // Sets first n bytes of the area to zero
-  bzero((char*)&serv_addr, sizeof(serv_addr));
-  serv_addr.sin_family = AF_INET;
-  bcopy((char*)server->h_addr, (char*)&serv_addr.sin_addr.s_addr,
-        server->h_length);
-
-  // Converting unsigned short integer from host byte order to network byte
-  // order.
-  serv_addr.sin_port = htons(PORT);
-
-  // Attempt connection with server
-  if (connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
-    error("ERROR connecting");
-
-  // Create Ncurses Window, with input, no echo and hidden cursor
-  initscr();
-  cbreak();
-  noecho();
-  start_color();
-  use_default_colors();
-  curs_set(0);
-
-  // Set window to new ncurses window
-  win = newwin(HEIGHT, WIDTH, 0, 0);
-
-  // Player colours
-  init_pair(0, COLOR_WHITE, COLOR_BLUE);
-  init_pair(1, COLOR_WHITE, COLOR_RED);
-  init_pair(2, COLOR_WHITE, COLOR_GREEN);
-  init_pair(3, COLOR_BLACK, COLOR_YELLOW);
-  init_pair(4, COLOR_BLACK, COLOR_MAGENTA);
-  init_pair(5, COLOR_BLACK, COLOR_CYAN);
-  init_pair(6, COLOR_BLACK, COLOR_WHITE);
-  init_pair(8, COLOR_BLACK, COLOR_MAGENTA);
-
+void first_screen() {
+  system("clear");
   mvprintw((HEIGHT - 20) / 2, (WIDTH - 58) / 2,
            "  _____ _   _______ _____ _____ _____ ");
   mvprintw((HEIGHT - 20) / 2 + 1, (WIDTH - 58) / 2,
@@ -227,20 +175,133 @@ int main(int argc, char* argv[]) {
            " - Use the keys w, a, s, d to move.");
   mvprintw((HEIGHT - 20) / 2 + 13, (WIDTH - 58) / 2,
            " - Eat fruit, slay monsters.");
-  mvprintw((HEIGHT - 20) / 2 + 14, (WIDTH - 58) / 2, " - Play with friends");
-  mvprintw((HEIGHT - 20) / 2 + 15, (WIDTH - 58) / 2, "   or alone.");
-  mvprintw((HEIGHT - 20) / 2 + 16, (WIDTH - 58) / 2,
-           " - Defeat the big boss at level 10 to win!");
-  mvprintw((HEIGHT - 20) / 2 + 17, (WIDTH - 58) / 2,
-           " - Press '.' to quit at any time.");
-  mvprintw((HEIGHT - 20) / 2 + 19, (WIDTH - 58) / 2,
+  mvprintw((HEIGHT - 20) / 2 + 15, (WIDTH - 58) / 2, " Commands:");
+  mvprintw((HEIGHT - 20) / 2 + 17, (WIDTH - 58) / 2, "[l] to login");
+  mvprintw((HEIGHT - 20) / 2 + 18, (WIDTH - 58) / 2, "[c] to create new user");
+  mvprintw((HEIGHT - 20) / 2 + 20, (WIDTH - 58) / 2,
            "Press any key to start . . .");
-  getch();
+  // getch();
+}
 
-  // Start writing inputs to the server every REFRESH seconds and updating the
-  // screen
-  make_thread(update_screen, &sockfd);
-  make_thread(write_to_server, &sockfd);
+int main(int argc, char* argv[]) {
+  int sockfd;
+  struct sockaddr_in serv_addr;
+  struct hostent* server;
+  char key_buffer;
+
+  // Create Ncurses Window, with input, no echo and hidden cursor
+  initscr();
+  cbreak();
+  noecho();
+  start_color();
+  use_default_colors();
+  curs_set(0);
+
+  // Set window to new ncurses window
+  win = newwin(HEIGHT, WIDTH, 0, 0);
+
+  // WHITE, BLACK, BLUE, RED, GREEN, YELLOW, MAGENTA, CYAN
+  // Player colours
+  init_pair(0, COLOR_GREEN, COLOR_BLACK);
+  init_pair(1, COLOR_BLUE, COLOR_BLACK);
+  init_pair(2, COLOR_RED, COLOR_BLACK);
+  init_pair(3, COLOR_YELLOW, COLOR_BLACK);
+  init_pair(4, COLOR_MAGENTA, COLOR_BLACK);
+  init_pair(5, COLOR_CYAN, COLOR_BLACK);
+  init_pair(6, COLOR_WHITE, COLOR_BLUE);
+  // BUILDING
+  init_pair(7, COLOR_WHITE, COLOR_BLACK);
+  init_pair(8, COLOR_BLACK, COLOR_WHITE);
+  // monster
+  init_pair(9, COLOR_WHITE, COLOR_RED);
+  // FRUITS
+  init_pair(10, COLOR_GREEN, COLOR_BLACK);
+
+  first_screen();
+  char choice = getch();
+  choice = toupper(choice);
+  user_data user_to_login;
+  if (choice == LOGIN_KEY) {
+    system("clear");
+    mvprintw((HEIGHT - 20) / 2 + 5, (WIDTH - 58) / 2, "user login");
+    user_to_login = user_data_input();
+    // user_to_login.action_choice = '1';
+    strcpy(user_to_login.action_choice, "1");
+  } else if (choice == CREATE_USER_KEY) {
+    system("clear");
+    mvprintw((HEIGHT - 20) / 2 + 5, (WIDTH - 58) / 2, "creating new user");
+    user_to_login = user_data_input();
+    // user_to_login.action_choice = '2';
+    strcpy(user_to_login.action_choice, "2");
+  } else {
+    system("clear");
+    mvprintw((HEIGHT - 20) / 2 + 15, (WIDTH - 58) / 2,
+             " invalid command, exiting...");
+    getch();
+    echo();
+    curs_set(1);
+    endwin();
+    return 0;
+  }
+
+  // Getting socket descriptor
+  sockfd = socket(AF_INET, SOCK_STREAM, 0);
+  if (sockfd < 0)
+    error("ERROR opening socket");
+
+  // if no server name use default localhost
+  if (argc < 2)
+    server = gethostbyname(LOCALHOST);
+  else
+    server = gethostbyname(argv[1]);
+  if (server == NULL) {
+    fprintf(stderr, "ERROR, no such host.\n");
+    exit(0);
+  }
+
+  // Sets first n bytes of the area to zero
+  bzero((char*)&serv_addr, sizeof(serv_addr));
+  serv_addr.sin_family = AF_INET;
+  bcopy((char*)server->h_addr, (char*)&serv_addr.sin_addr.s_addr,
+        server->h_length);
+
+  // Converting unsigned short integer from host byte order to network byte
+  // order.
+  serv_addr.sin_port = htons(PORT);
+
+  // Attempt connection with server
+  if (connect(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
+    error("ERROR connecting");
+  // getch();
+
+  char ldata[1024];
+  char login = 'A';
+  int valread;
+  strcpy(ldata, user_to_login.action_choice);
+  strcat(ldata, " ");
+  strcat(ldata, user_to_login.name);
+  strcat(ldata, " ");
+  strcat(ldata, user_to_login.passwd);
+  // send login ("1 username password")string to server
+  send(sockfd, ldata, strlen(ldata), 0);
+  valread = read(sockfd, &login, 1);
+  if (valread < 0)
+    error("ERROR reading from socket.");
+  // mvprintw((HEIGHT - 20) / 2 + 5, (WIDTH - 58) / 2, "after conn %d",
+  // valread); getch(); Start writing inputs to the server every REFRESH seconds
+  // and updating the screen
+  if (login == '1') {
+    make_thread(update_screen, &sockfd);
+    make_thread(write_to_server, &sockfd);
+  } else {
+    echo();
+    curs_set(1);
+    endwin();
+
+    // Close connection
+    close(sockfd);
+    return 0;
+  }
 
   while (game_result == ONGOING) {
     // Get player input with time out
@@ -248,7 +309,7 @@ int main(int argc, char* argv[]) {
     timeout(REFRESH * 1000);
     key_buffer = getch();
     key_buffer = toupper(key_buffer);
-    if (key_buffer == '.') {
+    if (key_buffer == QUIT_KEY) {
       game_result = INTERRUPTED;
       break;
     } else if ((key_buffer == UP_KEY) || (key_buffer == DOWN_KEY) ||
@@ -263,17 +324,21 @@ int main(int argc, char* argv[]) {
   // Show the user who won
   WINDOW* announcement = newwin(7, 35, (HEIGHT - 7) / 2, (WIDTH - 35) / 2);
   box(announcement, 0, 0);
+
   if (game_result == WINNER) {
     mvwaddstr(announcement, 2, (35 - 21) / 2, "Game Over - You WIN!");
     mvwaddstr(announcement, 4, (35 - 21) / 2, "Press any key to quit.");
     wbkgd(announcement, COLOR_PAIR(2));
   } else {
+    sleep(1);
     mvwaddstr(announcement, 2, (35 - 21) / 2, "Game Over - you lose!");
     if (game_result > 0)
       mvwprintw(announcement, 3, (35 - 13) / 2, "Player %d won.", game_result);
     mvwaddstr(announcement, 4, (35 - 21) / 2, "Press any key to quit.");
     wbkgd(announcement, COLOR_PAIR(1));
+    // sleep(5);
   }
+
   mvwin(announcement, (HEIGHT - 7) / 2, (WIDTH - 35) / 2);
   wnoutrefresh(announcement);
   wrefresh(announcement);

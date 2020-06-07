@@ -9,10 +9,10 @@ LFLAGS=-lncurses -lpthread
 all: client server
 
 server: server.c
-	$(CC) $(CFLAGS) server.c -o server $(LFLAGS)
+	$(CC) $(CFLAGS) server.c users.c -o server $(LFLAGS)
 
 client: client.c
 	$(CC) $(CFLAGS) client.c -o client $(LFLAGS)
 
 clean: 
-	rm client server
+	rm client server users.dat

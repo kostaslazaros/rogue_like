@@ -2,36 +2,14 @@
  * Multiplayer Snakes game - Server
  * Luke Collins
  */
-#include <ctype.h>
-#include <netinet/in.h>
-#include <pthread.h>
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
 
-#define PORT 7070
+#include <signal.h>
+#include "skotos.h"
+#include "users.h"
+
 #define MAX_PLAYERS 1024
 #define LEVELS 10
-#define HEIGHT 24
-#define WIDTH 80
-#define MAX_SNAKE_LENGTH HEIGHT* WIDTH
 #define WINNER_LENGTH 15
-#define FRUIT -1024
-#define SPIDER 111
-#define GOBLIN 200
-#define BORDER -99
-#define NEXT_LEVEL 24
-#define PREVIOUS_LEVEL 23
-#define WINNER -94
-#define UP_KEY 'W'
-#define DOWN_KEY 'S'
-#define LEFT_KEY 'A'
-#define RIGHT_KEY 'D'
-#define STAT_KEY 'Q'
 
 // Game map
 int game_map[LEVELS][HEIGHT][WIDTH];
@@ -52,14 +30,12 @@ typedef enum {
 // Coordinate structure, these are the building blocks for snakes
 typedef struct {
   int x, y;
-  direction d;
 } coordinate;
 
 // Snake structure, each part is made up of coordinate
 typedef struct {
   int player_no, length, prev_state, health, attack, level;
   coordinate head;
-
 } player;
 
 // Function to create a player
@@ -81,7 +57,6 @@ player* make_player(int player_no, int level, int head_y, int head_x) {
 
   p_player->head.y = head_y;
   p_player->head.x = head_x;
-  p_player->head.d = STATIC;
 
   return p_player;
 }
@@ -99,7 +74,7 @@ void kill_player(player* p_player) {
 }
 
 int collision_detection(int next_y, int next_x, player* p_player) {
-  printf("Value of health %d\n", p_player->health);
+  // printf("Value of health %d\n", p_player->health);
   int next_move_val = game_map[p_player->level][next_y][next_x];
   if (next_move_val == NEXT_LEVEL) {
     p_player->level += 1;
@@ -138,11 +113,12 @@ int collision_detection(int next_y, int next_x, player* p_player) {
 
 // Function to move player
 void move_player(player* p_player, direction d) {
-  int old_x, old_y, prev_state, old_level, col_det, new_x, new_y;
-  old_x = p_player->head.x;
-  old_y = p_player->head.y;
-  old_level = p_player->level;
-  prev_state = p_player->prev_state;
+  int new_x, new_y;
+
+  int old_x = p_player->head.x;
+  int old_y = p_player->head.y;
+  int old_level = p_player->level;
+  int prev_state = p_player->prev_state;
 
   if (d == STATIC)
     return;
@@ -151,37 +127,33 @@ void move_player(player* p_player, direction d) {
     case UP: {
       new_x = old_x;
       new_y = old_y - 1;
-      p_player->head.d = UP;
       break;
     }
     case DOWN: {
       new_x = old_x;
       new_y = old_y + 1;
-      p_player->head.d = DOWN;
       break;
     }
     case LEFT: {
       new_x = old_x - 1;
       new_y = old_y;
-      p_player->head.d = LEFT;
       break;
     }
     case RIGHT: {
       new_x = old_x + 1;
       new_y = old_y;
-      p_player->head.d = RIGHT;
       break;
     }
     case STATIC: {
       new_x = old_x;
       new_y = old_y;
-      p_player->head.d = STATIC;
       break;
     }
     default:
       break;
   }
-  col_det = collision_detection(new_y, new_x, p_player);
+
+  int col_det = collision_detection(new_y, new_x, p_player);
   if (col_det == 1) {
     return;
   } else if (col_det == 2) {
@@ -201,15 +173,23 @@ void move_player(player* p_player, direction d) {
 }
 
 // Function to randomly add a fruit to the game map
-void add_fruit() {
+void add_fruit(int lvl) {
   int x, y;
   do {
     y = rand() % (HEIGHT - 6) + 3;
     x = rand() % (WIDTH - 6) + 3;
-  } while (game_map[0][y][x] != 0);
+  } while (game_map[lvl][y][x] != 0);
   pthread_mutex_lock(&map_lock);
-  game_map[0][y][x] = FRUIT;
+  game_map[lvl][y][x] = FRUIT;
   pthread_mutex_unlock(&map_lock);
+}
+
+void add_randomly_fruits(int fruit_number) {
+  srand(time(NULL));
+  for (int lvl = 0; lvl < LEVELS; lvl++) {
+    for (int i = 0; i < fruit_number; i++)
+      add_fruit(lvl);
+  }
 }
 
 void add_fruit_directly(int level, int pos_x, int pos_y) {
@@ -223,7 +203,6 @@ void eat_fruit(player* p_player, direction d) {
   switch (d) {
     case UP: {
       p_player->head.y = p_player->head.y - 1;
-      p_player->head.d = UP;
       if (game_map[p_player->level][p_player->head.y][p_player->head.x + 1] ==
           FRUIT) {
         pthread_mutex_lock(&map_lock);
@@ -234,7 +213,6 @@ void eat_fruit(player* p_player, direction d) {
     }
     case DOWN: {
       p_player->head.y = p_player->head.y + 1;
-      p_player->head.d = DOWN;
       if (game_map[p_player->level][p_player->head.y][p_player->head.x + 1] ==
           FRUIT) {
         pthread_mutex_lock(&map_lock);
@@ -245,25 +223,22 @@ void eat_fruit(player* p_player, direction d) {
     }
     case LEFT: {
       p_player->head.x = p_player->head.x - 1;
-      p_player->head.d = LEFT;
       break;
     }
     case RIGHT: {
       p_player->head.x = p_player->head.x + 1;
-      p_player->head.d = RIGHT;
       break;
     }
     default:
       break;
   }
+
   pthread_mutex_lock(&map_lock);
   game_map[p_player->level][p_player->head.y][p_player->head.x] =
       -(p_player->player_no);
-  //   game_map[p_player->body_segment[0].y][p_player->body_segment[0].x] =
-  //   p_player->player_no;
   pthread_mutex_unlock(&map_lock);
   p_player->length++;
-  add_fruit();
+  // add_fruit();
 }
 
 // Stevens, chapter 12, page 428: Create detatched thread
@@ -295,27 +270,32 @@ void ctrl_c_handler() {
   exit(0);
 }
 
-// Thread gameplay function
+void set_game_borders() {
+  int i, l;
+  for (l = 0; l < LEVELS; l++)
+    for (i = 0; i < HEIGHT; i++)
+      game_map[l][i][0] = game_map[l][i][WIDTH - 1] = BORDER;
+  for (l = 0; l < LEVELS; l++)
+    for (i = 0; i < WIDTH; i++)
+      game_map[l][0][i] = game_map[l][HEIGHT - 1][i] = BORDER;
+}
+
 void* gameplay(void* arg) {
-  // Determine player number from file descriptor argument
   int fd = *(int*)arg;
   int player_no = fd - 3;
-  printf("Player number %d!\n", player_no);
 
-  // Find three consecutive zeros in map for starting player position
+  printf("Connected player: %d!\n", player_no);
+
   int head_y, head_x;
   srand(time(NULL));
   do {
     head_y = rand() % (HEIGHT - 6) + 3;
     head_x = rand() % (WIDTH - 6) + 3;
-  } while (
-      !(((game_map[0][head_y][head_x] == game_map[0][head_y + 1][head_x]) ==
-         game_map[0][head_y + 2][head_x]) == 0));
+  } while (!(game_map[0][head_y][head_x] == 0));
 
-  // Create player structure
   player* p_player = make_player(player_no, 0, head_y, head_x);
 
-  // Variables for user input
+  // User input
   char key = STATIC;
   char key_buffer = STATIC;
   char map_buffer[map_size];
@@ -419,7 +399,13 @@ void* gameplay(void* arg) {
 int main() {
   int socket_fds[MAX_PLAYERS];
   struct sockaddr_in socket_addr[MAX_PLAYERS];
-  int i, l;
+  int i;
+  user_list active_users = new_userlist_from_file();
+
+  for (int gh = 0; gh < active_users.size; gh++)
+    printf("%s \t %s \t %d \t %d \n", active_users.udata[gh].name,
+           active_users.udata[gh].passwd, active_users.udata[gh].won_games,
+           active_users.udata[gh].lost_games);
 
   // Handle Ctrl+C
   signal(SIGINT, ctrl_c_handler);
@@ -427,22 +413,8 @@ int main() {
   // Fill gamestate matrix with zeros
   memset(game_map, 0, map_size);
 
-  // Set game borders
-  for (l = 0; l < LEVELS; l++)
-    for (i = 0; i < HEIGHT; i++)
-      game_map[l][i][0] = game_map[l][i][WIDTH - 1] = BORDER;
-  for (l = 0; l < LEVELS; l++)
-    for (i = 0; i < WIDTH; i++)
-      game_map[l][0][i] = game_map[l][HEIGHT - 1][i] = BORDER;
+  set_game_borders();
 
-  // Randomly add five fruit
-  srand(time(NULL));
-  //   for (i = 0; i < 3; i++)
-  //     add_fruit();
-  add_fruit_directly(0, 4, 5);
-  add_fruit_directly(0, 4, 10);
-  add_fruit_directly(0, 10, 10);
-  add_fruit_directly(0, 20, 20);
   game_map[0][10][2] = BORDER;
   game_map[0][10][3] = BORDER;
   game_map[0][10][4] = BORDER;
@@ -464,12 +436,15 @@ int main() {
   game_map[2][15][15] = 298;
   game_map[2][22][3] = PREVIOUS_LEVEL;
 
+  // must run after custom items creation
+  add_randomly_fruits(3);
+
   // Create server socket
   socket_fds[0] = socket(AF_INET, SOCK_STREAM, 0);
   if (socket_fds[0] < 0)
     error("ERROR opening socket");
 
-  // Set socket address to zero and set attributes
+  // Zero socket address and set attributes
   bzero((char*)&socket_addr[0], sizeof(socket_addr[0]));
   socket_addr[0].sin_family = AF_INET;
   socket_addr[0].sin_addr.s_addr = INADDR_ANY;
@@ -483,8 +458,7 @@ int main() {
            sizeof(socket_addr[0])) < 0)
     error("ERROR on binding");
 
-  // Marking socket as a socket that will be used to accept incoming connection
-  // requests
+  // Marking socket to be used to accept incoming connection requests
   listen(socket_fds[0], 5);
   socklen_t clilen = sizeof(socket_addr[0]);
 
@@ -501,10 +475,47 @@ int main() {
       someone_won = 0;
     }
 
-    make_thread(&gameplay, &socket_fds[i]);
+    // listen for username and password
+    int valread;
+    char pass_buffer[1024] = {0};
+    valread = read(socket_fds[i], pass_buffer, 1024);
+    if (valread < 0)
+      error("ERROR reading from socket.");
+
+    user_login usr;
+    // break string to a series of tokens
+    strcpy(usr.action, strtok(pass_buffer, " "));
+    strcpy(usr.name, strtok(NULL, " "));
+    strcpy(usr.passwd, strtok(NULL, " "));
+    // printf("password %s\n", token);
+
+    if (strncmp(usr.action, "1", 1) == 0) {
+      if (check_user_pass(usr.name, usr.passwd, &active_users)) {
+        send(socket_fds[i], "1", strlen("1"), 0);
+        make_thread(&gameplay, &socket_fds[i]);
+        printf("Pass is ok\n");
+      }
+
+      else {
+        printf("Not Found\n");
+        close(socket_fds[i]);
+      }
+    } else if (strncmp(usr.action, "2", 1) == 0) {
+      add_new_user(usr.name, usr.passwd, &active_users);
+      save_to_file(&active_users);
+      send(socket_fds[i], "1", strlen("1"), 0);
+      make_thread(&gameplay, &socket_fds[i]);
+    }
+
+    // // SEND LOGIN STATUS TO CLIENT
+    // send(socket_fds[i], "1", strlen("1"), 0);
+
+    // // If success continue to make new thread
+    // make_thread(&gameplay, &socket_fds[i]);
   }
 
   // Closing the server socket
   close(socket_fds[0]);
+  printf("Closing server. Bye...\n");
   return 0;
 }
