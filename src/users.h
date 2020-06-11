@@ -1,6 +1,8 @@
 #ifndef USERS_H
 #define USERS_H
 
+#define USERS_FILE "users.dat"
+
 typedef struct {
   char name[25];
   char passwd[25];

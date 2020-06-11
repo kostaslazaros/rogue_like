@@ -12,6 +12,7 @@
 #include <unistd.h>
 
 #define PORT 7070
+#define LEVELS 10
 #define HEIGHT 24
 #define WIDTH 80
 

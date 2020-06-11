@@ -1,6 +1,5 @@
 /*
- * Multiplayer Snakes game - Server
- * Luke Collins
+ * Multiplayer rogue-like game
  */
 
 #include <signal.h>
@@ -8,7 +7,6 @@
 #include "users.h"
 
 #define MAX_PLAYERS 1024
-#define LEVELS 10
 #define WINNER_LENGTH 15
 
 // Game map
@@ -73,12 +71,62 @@ void kill_player(player* p_player) {
   p_player = NULL;
 }
 
-int collision_detection(int next_y, int next_x, player* p_player) {
+// Function for a player to eat a fruit in front of it
+void eat_fruit(player* p_player, direction d) {
+  switch (d) {
+    case UP: {
+      p_player->head.y = p_player->head.y - 1;
+      if (game_map[p_player->level][p_player->head.y][p_player->head.x + 1] ==
+          FRUIT) {
+        pthread_mutex_lock(&map_lock);
+        game_map[p_player->level][p_player->head.y][p_player->head.x + 1] = 0;
+        pthread_mutex_unlock(&map_lock);
+      }
+      break;
+    }
+    case DOWN: {
+      p_player->head.y = p_player->head.y + 1;
+      if (game_map[p_player->level][p_player->head.y][p_player->head.x + 1] ==
+          FRUIT) {
+        pthread_mutex_lock(&map_lock);
+        game_map[p_player->level][p_player->head.y][p_player->head.x + 1] = 0;
+        pthread_mutex_unlock(&map_lock);
+      }
+      break;
+    }
+    case LEFT: {
+      p_player->head.x = p_player->head.x - 1;
+      break;
+    }
+    case RIGHT: {
+      p_player->head.x = p_player->head.x + 1;
+      break;
+    }
+    default:
+      break;
+  }
+
+  pthread_mutex_lock(&map_lock);
+  game_map[p_player->level][p_player->head.y][p_player->head.x] = 0;
+  pthread_mutex_unlock(&map_lock);
+  p_player->health++;
+}
+
+int collision_detection(int next_y,
+                        int next_x,
+                        player* p_player,
+                        direction dir) {
   // printf("Value of health %d\n", p_player->health);
   int next_move_val = game_map[p_player->level][next_y][next_x];
   if (next_move_val == NEXT_LEVEL) {
     p_player->level += 1;
     return 2;
+  }
+  if (next_move_val == FRUIT && p_player->health < 20) {
+    eat_fruit(p_player, dir);
+    if (p_player->health > 20) {
+      p_player->health = 20;
+    }
   }
   if (next_move_val == PREVIOUS_LEVEL) {
     p_player->level -= 1;
@@ -153,7 +201,7 @@ void move_player(player* p_player, direction d) {
       break;
   }
 
-  int col_det = collision_detection(new_y, new_x, p_player);
+  int col_det = collision_detection(new_y, new_x, p_player, d);
   if (col_det == 1) {
     return;
   } else if (col_det == 2) {
@@ -198,49 +246,6 @@ void add_fruit_directly(int level, int pos_x, int pos_y) {
   pthread_mutex_unlock(&map_lock);
 }
 
-// Function for a player to eat a fruit in front of it
-void eat_fruit(player* p_player, direction d) {
-  switch (d) {
-    case UP: {
-      p_player->head.y = p_player->head.y - 1;
-      if (game_map[p_player->level][p_player->head.y][p_player->head.x + 1] ==
-          FRUIT) {
-        pthread_mutex_lock(&map_lock);
-        game_map[p_player->level][p_player->head.y][p_player->head.x + 1] = 0;
-        pthread_mutex_unlock(&map_lock);
-      }
-      break;
-    }
-    case DOWN: {
-      p_player->head.y = p_player->head.y + 1;
-      if (game_map[p_player->level][p_player->head.y][p_player->head.x + 1] ==
-          FRUIT) {
-        pthread_mutex_lock(&map_lock);
-        game_map[p_player->level][p_player->head.y][p_player->head.x + 1] = 0;
-        pthread_mutex_unlock(&map_lock);
-      }
-      break;
-    }
-    case LEFT: {
-      p_player->head.x = p_player->head.x - 1;
-      break;
-    }
-    case RIGHT: {
-      p_player->head.x = p_player->head.x + 1;
-      break;
-    }
-    default:
-      break;
-  }
-
-  pthread_mutex_lock(&map_lock);
-  game_map[p_player->level][p_player->head.y][p_player->head.x] =
-      -(p_player->player_no);
-  pthread_mutex_unlock(&map_lock);
-  p_player->length++;
-  // add_fruit();
-}
-
 // Stevens, chapter 12, page 428: Create detatched thread
 int make_thread(void* (*fn)(void*), void* arg) {
   int err;
@@ -270,6 +275,7 @@ void ctrl_c_handler() {
   exit(0);
 }
 
+// game border saved in game_map
 void set_game_borders() {
   int i, l;
   for (l = 0; l < LEVELS; l++)
@@ -280,6 +286,7 @@ void set_game_borders() {
       game_map[l][0][i] = game_map[l][HEIGHT - 1][i] = BORDER;
 }
 
+// game logic is here
 void* gameplay(void* arg) {
   int fd = *(int*)arg;
   int player_no = fd - 3;
@@ -423,18 +430,18 @@ int main() {
   game_map[0][12][3] = BORDER;
   game_map[0][12][4] = BORDER;
   game_map[0][12][5] = BORDER;
+  game_map[1][10][2] = BORDER;
+  game_map[1][10][3] = BORDER;
+  game_map[0][18][18] = NEXT_LEVEL;
+  game_map[1][20][20] = PREVIOUS_LEVEL;
+  game_map[1][22][3] = NEXT_LEVEL;
+  game_map[2][22][3] = PREVIOUS_LEVEL;
   game_map[0][12][12] = 298;
   game_map[0][12][13] = 298;
   game_map[0][12][14] = 298;
-  game_map[0][18][18] = NEXT_LEVEL;
-  game_map[1][20][20] = PREVIOUS_LEVEL;
   game_map[1][8][8] = 215;
   game_map[1][20][25] = 215;
-  game_map[1][10][2] = BORDER;
-  game_map[1][10][3] = BORDER;
-  game_map[1][22][3] = NEXT_LEVEL;
   game_map[2][15][15] = 298;
-  game_map[2][22][3] = PREVIOUS_LEVEL;
 
   // must run after custom items creation
   add_randomly_fruits(3);
