@@ -27,15 +27,15 @@ typedef enum {
 } direction;
 
 // Coordinate structure
-typedef struct {
-  int x, y;
-} coordinate;
+// typedef struct {
+//   int x, y;
+// } coordinate;
 
 // Player structure, each part is made up of coordinate
-typedef struct {
-  int player_no, length, prev_state, health, attack, level;
-  coordinate head;
-} player;
+// typedef struct {
+//   int player_no, length, prev_state, health, attack, level;
+//   coordinate head;
+// } player;
 
 void read_map(char* filename, int level) {
   FILE* myFile;
@@ -364,7 +364,8 @@ void* gameplay(void* arg) {
   // User input
   char key = STATIC;
   char key_buffer = STATIC;
-  char map_buffer[map_size];
+  // char map_buffer[map_size];
+  display_data current_map_user;
   int bytes_sent, n;
   int success = 1;
 
@@ -388,10 +389,16 @@ void* gameplay(void* arg) {
     }
 
     // Copy map to buffer, and send to client
-    memcpy(map_buffer, game_map[p_player->level], client_map_size);
+    memcpy(current_map_user.level_map, game_map[p_player->level],
+           client_map_size);
+    // memcpy(&current_map_user.current_player, p_player, sizeof(p_player));
+    current_map_user.current_player.level = p_player->level;
+    current_map_user.current_player.health = p_player->health;
+    current_map_user.current_player.player_no = p_player->player_no;
+    // memcpy(map_buffer, game_map[p_player->level], client_map_size);
     bytes_sent = 0;
-    while (bytes_sent < client_map_size) {
-      bytes_sent += write(fd, game_map[p_player->level], client_map_size);
+    while (bytes_sent < sizeof(current_map_user)) {
+      bytes_sent += write(fd, &current_map_user, sizeof(current_map_user));
       if (bytes_sent < 0)
         error("ERROR writing to socket");
     }

@@ -34,4 +34,18 @@
 #define PREVIOUS_LEVEL 23
 #define WINNER -94
 
+typedef struct {
+  int x, y;
+} coordinate;
+
+typedef struct {
+  int player_no, length, prev_state, health, attack, level;
+  coordinate head;
+} player;
+
+typedef struct {
+  int level_map[LEVELS][HEIGHT][WIDTH];
+  player current_player;
+} display_data;
+
 #endif

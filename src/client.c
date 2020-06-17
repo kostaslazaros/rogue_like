@@ -84,21 +84,24 @@ void* update_screen(void* arg) {
   int bytes_read;
   int game_map[HEIGHT][WIDTH];
   int map_size = HEIGHT * WIDTH * sizeof(game_map[0][0]);
-  char map_buffer[map_size];
+  // char map_buffer[map_size];
   int i, j, n;
+  display_data map_user;
+  int map_user_size = sizeof(map_user);
+  char d_buffer[map_user_size];
 
   while (game_result == ONGOING) {
     // Receive updated map from server
     bytes_read = 0;
-    bzero(map_buffer, map_size);
-    while (bytes_read < map_size) {
-      n = read(sockfd, map_buffer + bytes_read, map_size - bytes_read);
+    bzero(d_buffer, map_user_size);
+    while (bytes_read < map_user_size) {
+      n = read(sockfd, d_buffer + bytes_read, map_user_size - bytes_read);
       if (n <= 0)
         goto end;
       bytes_read += n;
     }
-    memcpy(game_map, map_buffer, map_size);
-
+    memcpy(&map_user, d_buffer, map_user_size);
+    memcpy(game_map, map_user.level_map, map_size);
     clear();
     // box(win, '+', '+');
     refresh();
@@ -148,7 +151,8 @@ void* update_screen(void* arg) {
         }
       }
     }
-    // mvprintw(24, 0, "Testing");
+    mvprintw(24, 0, "level: %d, health: %d", map_user.current_player.level,
+             map_user.current_player.health);
     refresh();
   }
 
