@@ -356,7 +356,7 @@ void set_level_walls(int level, int x1, int y1, int x2, int y2) {
 // game logic is here
 void* gameplay(void* arg) {
   int fd = *(int*)arg;
-  int player_no = fd - 3;
+  int player_no = fd - 4;
 
   printf("Connected player: %d!\n", player_no);
   player* p_player = make_player(player_no);

@@ -151,7 +151,8 @@ void* update_screen(void* arg) {
         }
       }
     }
-    mvprintw(24, 0, "level: %d, health: %d", map_user.current_player.level,
+    mvprintw(24, 0, "player:%d, level:%d, health:%d",
+             map_user.current_player.player_no, map_user.current_player.level,
              map_user.current_player.health);
     refresh();
   }
