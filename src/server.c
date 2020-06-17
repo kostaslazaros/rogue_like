@@ -49,23 +49,6 @@ void read_map(char* filename, int level) {
       fscanf(myFile, "%d", &game_map[level][i][j]);
   fclose(myFile);
 }
-// int save_map() {
-//   FILE* outfile;
-//   int i, l;
-//   outfile = fopen(LEVEL_FILE, "w");
-//   if (outfile == NULL) {
-//     fprintf(stderr, "\nError opening file\n");
-//     exit(1);
-//   }
-//   for (l = 0; l < LEVELS; l++)
-//     for (i = 0; i < HEIGHT; i++)
-//       fwrite(&game_map[l][i][WIDTH - 1], sizeof(int), 1, outfile);
-//   for (l = 0; l < LEVELS; l++)
-//     for (i = 0; i < WIDTH; i++)
-//       fwrite(&game_map[l][HEIGHT - 1][i], sizeof(int), 1, outfile);
-//   fclose(outfile);
-//   return 0;
-// }
 
 // Function to create a player
 player* make_player(int player_no) {
@@ -376,14 +359,6 @@ void* gameplay(void* arg) {
   int player_no = fd - 3;
 
   printf("Connected player: %d!\n", player_no);
-
-  // int head_y, head_x;
-  // srand(time(NULL));
-  // do {
-  //   head_y = rand() % (HEIGHT - 6) + 3;
-  //   head_x = rand() % (WIDTH - 6) + 3;
-  // } while (!(game_map[0][head_y][head_x] == 0));
-
   player* p_player = make_player(player_no);
 
   // User input
