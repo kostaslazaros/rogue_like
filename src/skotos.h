@@ -27,7 +27,7 @@
 #define CREATE_USER_KEY 'C'
 
 #define FRUIT -1024
-#define SPIDER 111
+#define SPIDER 100
 #define GOBLIN 200
 #define BORDER -99
 #define NEXT_LEVEL 24

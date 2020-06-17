@@ -114,6 +114,11 @@ void* update_screen(void* arg) {
           attron(COLOR_PAIR(9));
           mvprintw(i, j, "G");
           attroff(COLOR_PAIR(9));
+
+        } else if ((current > SPIDER) && (current < SPIDER + 100)) {
+          attron(COLOR_PAIR(6));
+          mvprintw(i, j, "X");
+          attroff(COLOR_PAIR(6));
         } else if (current == NEXT_LEVEL) {
           attron(COLOR_PAIR(7));
           mvprintw(i, j, ">");
@@ -143,7 +148,7 @@ void* update_screen(void* arg) {
         }
       }
     }
-    mvprintw(24, 0, "Testing");
+    // mvprintw(24, 0, "Testing");
     refresh();
   }
 
