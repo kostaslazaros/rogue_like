@@ -1,11 +1,14 @@
-/*
- * Multiplayer rogue-like game
- */
+/******************************** 
+* A rogue like multiplayer game * 
+*            Made by:           *
+*       Nefeli Stefanatou       *
+*       Konstantinos Lazaros    *
+*********************************/ 
 
 #include <signal.h>
 #include "skotos.h"
 #include "users.h"
-// #define LEVEL_FILE "level.dat"
+#define MAP_FILE "game_map.dat"
 
 #define MAX_PLAYERS 1024
 #define WINNER_LENGTH 15
@@ -16,6 +19,7 @@ int map_size = LEVELS * HEIGHT * WIDTH * sizeof(game_map[0][0][0]);
 int client_map_size = HEIGHT * WIDTH * sizeof(game_map[0][0][0]);
 pthread_mutex_t map_lock = PTHREAD_MUTEX_INITIALIZER;
 int someone_won = 0;
+int number_of_players = 0;
 
 // Direction key types
 typedef enum {
@@ -26,18 +30,8 @@ typedef enum {
   STATIC = STAT_KEY
 } direction;
 
-// Coordinate structure
-// typedef struct {
-//   int x, y;
-// } coordinate;
 
-// Player structure, each part is made up of coordinate
-// typedef struct {
-//   int player_no, length, prev_state, health, attack, level;
-//   coordinate head;
-// } player;
-
-void read_map(char* filename, int level) {
+void load_level(char* filename, int level) {
   FILE* myFile;
   myFile = fopen(filename, "r");
 
@@ -50,6 +44,30 @@ void read_map(char* filename, int level) {
   fclose(myFile);
 }
 
+int save_map() {
+  FILE* outfile;
+  outfile = fopen(MAP_FILE, "w");
+  if (outfile == NULL) {
+    fprintf(stderr, "\nError opening file\n");
+    exit(1);
+  }
+
+  fwrite(&game_map, sizeof(game_map), 1, outfile);
+
+  fclose(outfile);
+  return 0;
+}
+
+void load_map() {
+  FILE* infile;
+  infile = fopen(MAP_FILE, "r");
+  if (infile == NULL) {
+    fprintf(stderr, "\nError opening file\n");
+    exit(1);
+  }
+  fread(&game_map, sizeof(game_map), 1, infile);
+  fclose(infile);
+}
 // Function to create a player
 player* make_player(int player_no) {
   int head_y, head_x;
@@ -90,6 +108,7 @@ void kill_player(player* p_player) {
   // Free memory
   free(p_player);
   p_player = NULL;
+  save_map();
 }
 
 // Function for a player to eat a fruit in front of it
@@ -300,13 +319,6 @@ void add_randomly_monsters(int number_of_monsters, int monster_num) {
   }
 }
 
-void add_fruit_directly(int level, int pos_x, int pos_y) {
-  pthread_mutex_lock(&map_lock);
-  game_map[level][pos_y][pos_x] = FRUIT;
-  pthread_mutex_unlock(&map_lock);
-}
-
-// Stevens, chapter 12, page 428: Create detatched thread
 int make_thread(void* (*fn)(void*), void* arg) {
   int err;
   pthread_t tid;
@@ -335,28 +347,11 @@ void ctrl_c_handler() {
   exit(0);
 }
 
-// game border saved in game_map
-void set_game_borders() {
-  int i, l;
-  for (l = 0; l < LEVELS; l++)
-    for (i = 0; i < HEIGHT; i++)
-      game_map[l][i][0] = game_map[l][i][WIDTH - 1] = BORDER;
-  for (l = 0; l < LEVELS; l++)
-    for (i = 0; i < WIDTH; i++)
-      game_map[l][0][i] = game_map[l][HEIGHT - 1][i] = BORDER;
-}
-
-void set_level_walls(int level, int x1, int y1, int x2, int y2) {
-  int i, l;
-  for (l = x1; l <= x2; l++)
-    for (i = y1; i <= y2; i++)
-      game_map[level][l][i] = BORDER;
-}
-
 // game logic is here
 void* gameplay(void* arg) {
   int fd = *(int*)arg;
-  int player_no = fd - 4;
+  int player_no = fd - 3;
+
 
   printf("Connected player: %d!\n", player_no);
   player* p_player = make_player(player_no);
@@ -375,27 +370,26 @@ void* gameplay(void* arg) {
       success = 0;
 
     // Check if you are the winner
-    if (p_player->length >= 15) {
+    if (p_player->level == 9) {
       someone_won = player_no;
       pthread_mutex_lock(&map_lock);
-      game_map[0][0][0] = WINNER;
+      for (int lvl = 0; lvl < LEVELS; lvl++ )
+        game_map[lvl][0][0] = WINNER;
       pthread_mutex_unlock(&map_lock);
     } else if (game_map[0][0][0] != BORDER) {
       pthread_mutex_lock(&map_lock);
-      game_map[0][0][0] = someone_won;
+      for (int lvl = 0; lvl < LEVELS; lvl++ )
+        game_map[lvl][0][0] = someone_won;
       pthread_mutex_unlock(&map_lock);
     } else if (p_player->health <= 0) {
       success = 0;
     }
 
-    // Copy map to buffer, and send to client
     memcpy(current_map_user.level_map, game_map[p_player->level],
            client_map_size);
-    // memcpy(&current_map_user.current_player, p_player, sizeof(p_player));
     current_map_user.current_player.level = p_player->level;
     current_map_user.current_player.health = p_player->health;
     current_map_user.current_player.player_no = p_player->player_no;
-    // memcpy(map_buffer, game_map[p_player->level], client_map_size);
     bytes_sent = 0;
     while (bytes_sent < sizeof(current_map_user)) {
       bytes_sent += write(fd, &current_map_user, sizeof(current_map_user));
@@ -445,7 +439,7 @@ void* gameplay(void* arg) {
     }
   }
 
-  if (p_player->length == WINNER_LENGTH) {
+  if (p_player->level == 9) {
     fprintf(stderr, "Player %d won!\n", player_no);
     kill_player(p_player);
     close(fd);
@@ -485,25 +479,24 @@ int main() {
   // Fill gamestate matrix with zeros
   memset(game_map, 0, map_size);
 
-  set_game_borders();
-
-  read_map("level0.txt", 0);
-  read_map("level1.txt", 1);
-  read_map("level2.txt", 2);
-  read_map("level3.txt", 3);
-  read_map("level4.txt", 4);
-  read_map("level5.txt", 5);
-  read_map("level6.txt", 6);
-  read_map("level7.txt", 7);
-  read_map("level8.txt", 8);
+  load_level("level0.txt", 0);
+  load_level("level1.txt", 1);
+  load_level("level2.txt", 2);
+  load_level("level3.txt", 3);
+  load_level("level4.txt", 4);
+  load_level("level5.txt", 5);
+  load_level("level6.txt", 6);
+  load_level("level7.txt", 7);
+  load_level("level8.txt", 8);
+  load_level("level9.txt", 9);
 
   // must run after custom items creation
-  add_randomly_fruits(3);
+  add_randomly_fruits(6);
   add_randomly_monsters(4, 215);
   add_randomly_monsters(2, 298);
   add_randomly_monsters(2, 115);
-
-  // save_map();
+  // load_map();
+  save_map();
 
   // Create server socket
   socket_fds[0] = socket(AF_INET, SOCK_STREAM, 0);
@@ -557,7 +550,6 @@ int main() {
     if (strncmp(usr.action, "1", 1) == 0) {
       if (check_user_pass(usr.name, usr.passwd, &active_users)) {
         send(socket_fds[i], "1", strlen("1"), 0);
-        make_thread(&gameplay, &socket_fds[i]);
         printf("Pass is ok\n");
       }
 
@@ -569,10 +561,11 @@ int main() {
       add_new_user(usr.name, usr.passwd, &active_users);
       save_to_file(&active_users);
       send(socket_fds[i], "1", strlen("1"), 0);
-      make_thread(&gameplay, &socket_fds[i]);
+      // make_thread(&gameplay, &socket_fds[i]);
     }
+    make_thread(&gameplay, &socket_fds[i]);
   }
-
+  
   // Closing the server socket
   close(socket_fds[0]);
   printf("Closing server. Bye...\n");

@@ -1,7 +1,9 @@
-/*
- * Multiplayer Snakes game - Client
- * Luke Collins
- */
+/******************************** 
+* A rogue like multiplayer game * 
+*            Made by:           *
+*       Nefeli Stefanatou       *
+*       Konstantinos Lazaros    *
+*********************************/      
 
 #include <ncurses.h>
 #include <netdb.h>
@@ -28,7 +30,6 @@ typedef struct {
 
 user_data user_data_input() {
   user_data new_user;
-  //   system("clear");
   initscr();
   echo();
   mvprintw((HEIGHT - 20) / 2 + 10, (WIDTH - 58) / 2, "Enter the user name :");
@@ -49,7 +50,7 @@ void error(const char* msg) {
   exit(0);
 }
 
-// Stevens, chapter 12, page 428: Create detatched thread
+
 int make_thread(void* (*fn)(void*), void* arg) {
   int err;
   pthread_t tid;
@@ -90,10 +91,19 @@ void* update_screen(void* arg) {
   int map_user_size = sizeof(map_user);
   char d_buffer[map_user_size];
 
+
   while (game_result == ONGOING) {
     // Receive updated map from server
     bytes_read = 0;
-    bzero(d_buffer, map_user_size);
+    // bzero(map_buffer, map_size);
+    // while (bytes_read < map_size) {
+    //   n = read(sockfd, map_buffer + bytes_read, map_size - bytes_read);
+    //   if (n <= 0)
+    //     goto end;
+    //   bytes_read += n;
+    // }
+    // memcpy(game_map, map_buffer, map_size);
+     bzero(d_buffer, map_user_size);
     while (bytes_read < map_user_size) {
       n = read(sockfd, d_buffer + bytes_read, map_user_size - bytes_read);
       if (n <= 0)
@@ -102,6 +112,7 @@ void* update_screen(void* arg) {
     }
     memcpy(&map_user, d_buffer, map_user_size);
     memcpy(game_map, map_user.level_map, map_size);
+
     clear();
     // box(win, '+', '+');
     refresh();
@@ -151,7 +162,8 @@ void* update_screen(void* arg) {
         }
       }
     }
-    mvprintw(24, 0, "player:%d, level:%d, health:%d",
+    // mvprintw(24, 0, "Testing");+_
+     mvprintw(24, 0, "player:%d, level:%d, health:%d",
              map_user.current_player.player_no, map_user.current_player.level,
              map_user.current_player.health);
     refresh();
@@ -228,6 +240,7 @@ int main(int argc, char* argv[]) {
   init_pair(10, COLOR_GREEN, COLOR_BLACK);
 
   first_screen();
+
   char choice = getch();
   choice = toupper(choice);
   user_data user_to_login;
@@ -304,6 +317,19 @@ int main(int argc, char* argv[]) {
     make_thread(update_screen, &sockfd);
     make_thread(write_to_server, &sockfd);
   } else {
+    WINDOW* invalid_user = newwin(7, 35, (HEIGHT - 7) / 2, (WIDTH - 35) / 2);
+    box(invalid_user, 0, 0);
+    mvwaddstr(invalid_user, 2, (35 - 21) / 2, "Invalid user or password");
+    mvwaddstr(invalid_user, 4, (35 - 21) / 2, "Press any key to quit.");
+    wbkgd(invalid_user, COLOR_PAIR(2));
+    
+    wnoutrefresh(invalid_user);
+    wrefresh(invalid_user);
+    sleep(2);
+    wgetch(invalid_user);
+    delwin(invalid_user);
+    wclear(win);
+    
     echo();
     curs_set(1);
     endwin();

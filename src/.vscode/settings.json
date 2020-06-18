@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "system_error": "c",
+        "random": "c",
+        "limits": "c",
+        "new": "c",
+        "stdexcept": "c",
+        "streambuf": "c",
+        "functional": "c"
+    }
+}

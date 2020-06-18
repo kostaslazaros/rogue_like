@@ -1,3 +1,10 @@
+/******************************** 
+* A rogue like multiplayer game * 
+*            Made by:           *
+*       Nefeli Stefanatou       *
+*       Konstantinos Lazaros    *
+*********************************/ 
+
 #include "users.h"
 #include <stdio.h>
 #include <stdlib.h>

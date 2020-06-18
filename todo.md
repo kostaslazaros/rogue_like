@@ -4,7 +4,7 @@ Client requirements
 [ ] Select how to use 50 starting points
 [X] Print map
 [X] Player movement(w,s,a,d)
-[ ] Player stats
+[X] Player stats
 [X] Connect multiple clients
-[ ] Create 10 levels
+[X] Create 10 levels
 [X] Save users
